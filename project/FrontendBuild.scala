@@ -8,7 +8,7 @@ object FrontendBuild extends Build with MicroService {
   override val appName = "api-gatekeeper-frontend"
 
   override lazy val plugins: Seq[Plugins] = Seq(
-    /*SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin */
+    SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin
   )
 
   override lazy val appDependencies: Seq[ModuleID] = AppDependencies()
