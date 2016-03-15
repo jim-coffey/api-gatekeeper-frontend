@@ -1,0 +1,6 @@
+@()(implicit request : Request[_], userFullName: Option[String])
+
+@main(title = "Unauthorized", userFullName = userFullName) {
+  <h2>Only Authorised user can access the requested page</h2>
+
+}

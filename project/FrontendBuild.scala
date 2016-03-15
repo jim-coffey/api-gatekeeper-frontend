@@ -1,7 +1,7 @@
 import sbt._
 import uk.gov.hmrc.SbtAutoBuildPlugin
-import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
+import uk.gov.hmrc.versioning.SbtGitVersioning
 
 object FrontendBuild extends Build with MicroService {
 
@@ -15,6 +15,7 @@ object FrontendBuild extends Build with MicroService {
 }
 
 private object AppDependencies {
+
   import play.core.PlayVersion
 
   val compile = Seq(
@@ -23,22 +24,25 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "play-authorised-frontend" % "4.6.0",
     "uk.gov.hmrc" %% "play-config" % "2.0.1",
     "uk.gov.hmrc" %% "play-json-logger" % "2.1.1",
+    "uk.gov.hmrc" %% "json-encryption" % "2.0.0",
     "uk.gov.hmrc" %% "play-health" % "1.1.0",
     "uk.gov.hmrc" %% "govuk-template" % "4.0.0",
-    "uk.gov.hmrc" %% "play-ui" % "4.10.0"
+    "uk.gov.hmrc" %% "play-ui" % "4.4.0"
   )
 
   abstract class TestDependencies(scope: String) {
-    lazy val test : Seq[ModuleID] = Seq(
+    lazy val test: Seq[ModuleID] = Seq(
       "org.scalatest" %% "scalatest" % "2.2.5" % scope,
       "org.pegdown" % "pegdown" % "1.4.2" % scope,
       "org.jsoup" % "jsoup" % "1.7.3" % scope,
       "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
-      "uk.gov.hmrc" %% "hmrctest" % "1.4.0" % scope
+      "uk.gov.hmrc" %% "hmrctest" % "1.4.0" % scope,
+      "com.github.tomakehurst" % "wiremock" % "1.57" % scope
     )
   }
 
   object Test extends TestDependencies("test")
+
   object IntegrationTest extends TestDependencies("it")
 
   def apply() = compile ++ Test.test ++ IntegrationTest.test

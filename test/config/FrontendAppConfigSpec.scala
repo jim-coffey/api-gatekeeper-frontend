@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-package controllers
+package unit.config
 
-import play.api.data.Forms._
-import play.api.data.Form
+import config.FrontendAppConfig
+import play.api.test.{FakeApplication, TestServer}
+import uk.gov.hmrc.play.test.UnitSpec
 
-case class LoginForm(username: String, password: String)
+class FrontendAppConfigSpec extends UnitSpec {
+  var port = sys.env.getOrElse("MICROSERVICE_PORT", "9001").toInt
 
-
-object LoginForm {
-  val form: Form[LoginForm] = Form(
-    mapping(
-      "username" -> nonEmptyText,
-      "password" -> nonEmptyText
-    )(LoginForm.apply)(LoginForm.unapply)
-  )
+  "appContext" should {
+    "be initialized with properties" in {
+      val app = FakeApplication(additionalConfiguration = Map())
+      val server = TestServer(port, app)
+      server.start()
+      FrontendAppConfig.nameDisplayLimit shouldBe 20
+      server.stop()
+    }
+  }
 
 }
