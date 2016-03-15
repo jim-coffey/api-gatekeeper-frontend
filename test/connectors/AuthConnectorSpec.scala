@@ -44,7 +44,7 @@ class AuthConnectorSpec extends UnitSpec with Matchers with ScalaFutures with Wi
 
     val connector = new AuthConnector {
       override val http = WSHttp
-      override val internalUserAuthBaseUrl: String = s"$wireMockUrl/auth/authenticate/user"
+      override val authUrl: String = s"$wireMockUrl/auth/authenticate/user"
     }
 
     case class AuthBackendResponse(access_token: BearerToken, group: Option[String], roles: Option[Set[Role]])
@@ -85,8 +85,7 @@ class AuthConnectorSpec extends UnitSpec with Matchers with ScalaFutures with Wi
       stubFor(post(urlEqualTo("/auth/authenticate/user"))
         .willReturn(aResponse().withStatus(401)))
 
-      val result = await(connector.login(loginDetails).failed)
-      result shouldBe a[InvalidCredentials]
+      intercept[InvalidCredentials](await(connector.login(loginDetails)))
     }
   }
 

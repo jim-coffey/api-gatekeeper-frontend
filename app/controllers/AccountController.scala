@@ -45,14 +45,16 @@ trait AccountController extends FrontendController with GatekeeperAuthWrapper {
     implicit request => implicit hc => Future.successful(Ok(login(loginForm)))
   }
 
-  val authenticateAction = Action.async { implicit request =>
+  val authenticate = Action.async { implicit request =>
     loginForm.bindFromRequest().fold(
       errors => Future.successful(BadRequest(login(loginForm))),
       loginDetails => processLogin(loginDetails)
     )
   }
 
-  def logoutAction = Action(implicit request => Redirect(routes.AccountController.loginPage()).removingFromSession(SessionKeys.authToken))
+  def logout = Action {
+    implicit request => Redirect(routes.AccountController.loginPage).removingFromSession(SessionKeys.authToken)
+  }
 
   private[controllers] def processLogin(loginDetails: LoginDetails)(implicit request: Request[_]) = {
     authConnector.login(loginDetails).map {

@@ -32,7 +32,7 @@ trait AppConfig {
 
 object FrontendAppConfig extends AppConfig with ServicesConfig {
 
-  override val nameDisplayLimit = getConfInt("name.display.limit", 20)
+  override lazy val nameDisplayLimit = getConfInt("name.display.limit", 20)
 
   private def loadConfig(key: String) = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
 

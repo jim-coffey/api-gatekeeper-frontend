@@ -35,45 +35,43 @@ trait GatekeeperAuthWrapper {
 
   implicit def loggedIn(implicit request: Request[_]) = request.session.get(GatekeeperSessionKeys.LoggedInUser)
 
+  private def validatedAsyncAction(f: Request[_] => Future[Result]) =
+    SessionTimeoutValidation(authProvider)(Action.async(f))
+
+
   def requiresLogin()(body: Request[_] => HeaderCarrier => Future[Result]): Action[AnyContent] = {
-    SessionTimeoutValidation(authProvider) {
-      Action.async { implicit request =>
-        val hc = HeaderCarrier.fromHeadersAndSession(request.headers, Some(request.session))
-        (request.session.get(SessionKeys.authToken)) match {
-          case Some(_) => body(request)(hc)
-          case _ => authProvider.redirectToLogin
-        }
+    validatedAsyncAction { implicit request =>
+      val hc = HeaderCarrier.fromHeadersAndSession(request.headers, Some(request.session))
+      (request.session.get(SessionKeys.authToken)) match {
+        case Some(_) => body(request)(hc)
+        case _ => authProvider.redirectToLogin
       }
     }
   }
 
   def requiresRole(requiredRole: Role)(body: Request[_] => HeaderCarrier => Future[Result]): Action[AnyContent] = {
-    SessionTimeoutValidation(authProvider) {
-      Action.async { implicit request =>
-        val hc = HeaderCarrier.fromHeadersAndSession(request.headers, Some(request.session))
-        (request.session.get(SessionKeys.authToken)) match {
-          case Some(_) => {
-            authConnector.authorized(requiredRole)(hc).flatMap {
-              case true => body(request)(hc)
-              case false => Future.successful(Unauthorized(views.html.unauthorized()))
-            }
+    validatedAsyncAction { implicit request =>
+      val hc = HeaderCarrier.fromHeadersAndSession(request.headers, Some(request.session))
+      request.session.get(SessionKeys.authToken)
+        .map { _ =>
+          authConnector.authorized(requiredRole)(hc).flatMap {
+            case true => body(request)(hc)
+            case false => Future.successful(Unauthorized(views.html.unauthorized()))
           }
-          case _ => Future.successful(Redirect(routes.AccountController.loginPage()))
         }
-      }
+        .getOrElse(Future.successful(Redirect(routes.AccountController.loginPage)))
     }
   }
 
   def redirectIfLoggedIn(redirectTo: play.api.mvc.Call)(body: Request[_] => HeaderCarrier => Future[Result]): Action[AnyContent] = {
-    SessionTimeoutValidation(authProvider) {
-      Action.async { implicit request =>
-        val hc = HeaderCarrier.fromHeadersAndSession(request.headers, Some(request.session))
-        (request.session.get(SessionKeys.authToken)) match {
-          case Some(_) => Future.successful(Redirect(redirectTo))
-          case _ => body(request)(hc)
-        }
+    validatedAsyncAction { implicit request =>
+      val hc = HeaderCarrier.fromHeadersAndSession(request.headers, Some(request.session))
+      (request.session.get(SessionKeys.authToken)) match {
+        case Some(_) => Future.successful(Redirect(redirectTo))
+        case _ => body(request)(hc)
       }
     }
   }
+
 
 }

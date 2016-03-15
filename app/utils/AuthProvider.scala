@@ -32,9 +32,8 @@ object GatekeeperAuthProvider extends AuthenticationProvider with Results {
     case _ => redirectToLogin.map(res => Right(res))
   }
 
-  override def redirectToLogin(implicit request: Request[_]) = {
+  override def redirectToLogin(implicit request: Request[_]) =
     Future.successful((Redirect(routes.AccountController.loginPage)))
-  }
 
 }
 

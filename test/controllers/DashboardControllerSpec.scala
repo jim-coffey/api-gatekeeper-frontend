@@ -94,8 +94,7 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
         val result = await(underTest.dashboardPage()(aLoggedInRequest))
 
         status(result) shouldBe 401
-        bodyOf(result) should include("Only Authorised user can access the requested page")
-
+        bodyOf(result) should include("Only Authorised users can access the requested page")
       }
 
     }

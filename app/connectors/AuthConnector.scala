@@ -26,37 +26,37 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 object AuthConnector extends AuthConnector with ServicesConfig {
-  override val internalUserAuthBaseUrl: String = s"${baseUrl("auth")}/auth/authenticate/user"
+  override val authUrl: String = s"${baseUrl("auth")}/auth/authenticate/user"
   override val http = WSHttp
 }
 
 trait AuthConnector {
 
-  private case class AuthBackendResponse(access_token: BearerToken, group: Option[String], roles: Option[Set[Role]]) {
+  private case class AuthResponse(access_token: BearerToken, group: Option[String], roles: Option[Set[Role]]) {
     def toAuthSuccess(loginDetails: LoginDetails) = SuccessfulAuthentication(access_token, loginDetails.userName, roles)
   }
 
-  private object AuthBackendResponse {
-    implicit val reads = Json.reads[AuthBackendResponse]
+  private object AuthResponse {
+    implicit val reads = Json.reads[AuthResponse]
   }
 
   class InvalidCredentials extends RuntimeException("Login failed")
 
-  val internalUserAuthBaseUrl: String
+  val authUrl: String
   val http: HttpPost with HttpGet with HttpDelete
 
   def login(loginDetails: LoginDetails)(implicit hc: HeaderCarrier): Future[SuccessfulAuthentication] =
-    http.POST[LoginDetails, AuthBackendResponse](internalUserAuthBaseUrl, loginDetails)
+    http.POST[LoginDetails, AuthResponse](authUrl, loginDetails)
       .map(_.toAuthSuccess(loginDetails))
-      .recover {
-        case e: Upstream4xxResponse if e.upstreamResponseCode == 401 => throw new InvalidCredentials
+      .recoverWith {
+        case e: Upstream4xxResponse if e.upstreamResponseCode == 401 => Future.failed(new InvalidCredentials)
       }
 
 
   def authorized(role: Role)(implicit hc: HeaderCarrier): Future[Boolean] = authorized(role.scope, Some(role.name))
 
   def authorized(scope: String, role: Option[String])(implicit hc: HeaderCarrier): Future[Boolean] = {
-    val authoriseUrl = role.fold(s"$internalUserAuthBaseUrl/authorise?scope=$scope")(aRole => s"$internalUserAuthBaseUrl/authorise?scope=$scope&role=$aRole")
+    val authoriseUrl = role.fold(s"$authUrl/authorise?scope=$scope")(aRole => s"$authUrl/authorise?scope=$scope&role=$aRole")
     http.GET(authoriseUrl) map (_ => true) recover {
       case e: Upstream4xxResponse if e.upstreamResponseCode == 401 => false
     }

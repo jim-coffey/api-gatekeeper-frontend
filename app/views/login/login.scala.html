@@ -6,7 +6,7 @@
         <h1>Sign in</h1>
     </header>
 
-    @helper.form(action = controllers.routes.AccountController.authenticateAction) {
+    @helper.form(action = controllers.routes.AccountController.authenticate) {
         <fieldset>
             @helper.CSRF.formField
 

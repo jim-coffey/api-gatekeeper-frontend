@@ -37,8 +37,6 @@ import scala.concurrent.Future
 
 class AccountControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
 
-  Helpers.running(fakeApplication) {
-
     trait Setup {
       val underTest = new AccountController {
         val authConnector = mock[AuthConnector]
@@ -79,7 +77,7 @@ class AccountControllerSpec extends UnitSpec with MockitoSugar with WithFakeAppl
 
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
 
-        val result = await(underTest.authenticateAction()(
+        val result = await(underTest.authenticate()(
           aLoggedOutRequest.withJsonBody(aValidFormJson)))
         status(result) shouldBe 303
         result.header.headers should contain("Location" -> "/api-gatekeeper/dashboard")
@@ -94,8 +92,8 @@ class AccountControllerSpec extends UnitSpec with MockitoSugar with WithFakeAppl
       }
 
       "give 400 when an invalid login form is posted" in new Setup {
-        val result = await(underTest.authenticateAction()(
-          aLoggedOutRequest.withJsonBody(Json.toJson(new LoginDetails("", Protected("password"))))))
+        val result = await(underTest.authenticate()(
+          aLoggedOutRequest.withJsonBody(Json.toJson(LoginDetails("", Protected("password"))))))
         status(result) shouldBe 400
       }
 
@@ -104,7 +102,7 @@ class AccountControllerSpec extends UnitSpec with MockitoSugar with WithFakeAppl
         val aValidFormJson = Json.toJson(loginDetails)
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.failed(new InvalidCredentials))
 
-        val result = await(underTest.authenticateAction()(
+        val result = await(underTest.authenticate()(
           aLoggedOutRequest.withJsonBody(aValidFormJson)))
 
         status(result) shouldBe 401
@@ -114,12 +112,10 @@ class AccountControllerSpec extends UnitSpec with MockitoSugar with WithFakeAppl
 
     "logoutAction" should {
       "take to login page with cleared auth cookie" in new Setup {
-        val result = await(underTest.logoutAction()(aLoggedInRequest))
+        val result = await(underTest.logout()(aLoggedInRequest))
         status(result) shouldBe 303
         result.header.headers should contain("Location" -> "/api-gatekeeper/login")
         session(result) get (SessionKeys.authToken) shouldBe None
       }
     }
-
-  }
 }

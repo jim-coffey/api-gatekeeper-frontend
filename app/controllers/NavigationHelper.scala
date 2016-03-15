@@ -31,7 +31,7 @@ object NavigationHelper {
 
   def loggedInNavLinks(userFullName: String) = Seq(
     NavLink(userFullName, "#", truncate = true),
-    NavLink("Sign out", routes.AccountController.logoutAction.toString)
+    NavLink("Sign out", routes.AccountController.logout.toString)
   )
 
   val loggedOutNavLinks = Seq(
