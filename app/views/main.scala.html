@@ -7,7 +7,7 @@
 
 @betaBanner = {
   @layouts.betaBanner(
-    userLoggedIn = false,
+    userLoggedIn = userFullName != None,
     betaFeedbackUrl = appConfig.betaFeedbackUrl,
     betaFeedbackUnauthenticatedUrl = appConfig.betaFeedbackUnauthenticatedUrl,
     showFeedbackLinkInBetaBanner = true)
