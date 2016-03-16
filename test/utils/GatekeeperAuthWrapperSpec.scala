@@ -54,16 +54,14 @@ class GatekeeperAuthWrapperSpec extends UnitSpec with MockitoSugar with WithFake
 
     "redirect to login if the request does not contain a valid logged in token" in new Setup {
       val result = underTest.requiresLogin()(actionReturns200Body).apply(aLoggedOutRequest)
-      status(result) shouldBe 303
-      header("Location", result) shouldBe Some("/api-gatekeeper/login")
+      redirectLocation(result) shouldBe Some("/api-gatekeeper/login")
     }
   }
 
   "requiresRole" should {
     "redirect to login if the request does not contain a valid logged in token" in new Setup {
       val result = underTest.requiresRole(new Role("scope", "role"))(actionReturns200Body).apply(aLoggedOutRequest)
-      status(result) shouldBe 303
-      header("Location", result) shouldBe Some("/api-gatekeeper/login")
+      redirectLocation(result) shouldBe Some("/api-gatekeeper/login")
     }
 
     "redirect to unauthorised page if user with role is not authorised" in new Setup {
@@ -85,8 +83,7 @@ class GatekeeperAuthWrapperSpec extends UnitSpec with MockitoSugar with WithFake
   "redirectIfLoggedIn" should {
     "redirect to the given page when user is logged in" in new Setup {
       val result = underTest.redirectIfLoggedIn(new Call("GET", "/welcome-page"))(actionReturns200Body).apply(aLoggedInRequest)
-      status(result) shouldBe 303
-      header("Location", result) shouldBe Some("/welcome-page")
+      redirectLocation(result) shouldBe Some("/welcome-page")
     }
 
     "stay on page when user is logged out" in new Setup {

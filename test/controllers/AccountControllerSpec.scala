@@ -25,8 +25,8 @@ import org.mockito.BDDMockito.given
 import org.mockito.Matchers._
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.Json
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import play.api.test.{FakeRequest, Helpers}
 import play.filters.csrf.CSRF.SignedTokenProvider
 import uk.gov.hmrc.crypto.Protected
 import uk.gov.hmrc.play.frontend.auth.AuthenticationProvider
@@ -37,85 +37,78 @@ import scala.concurrent.Future
 
 class AccountControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
 
-    trait Setup {
-      val underTest = new AccountController {
-        val authConnector = mock[AuthConnector]
+  trait Setup {
+    val underTest = new AccountController {
+      val authConnector = mock[AuthConnector]
 
-        def authProvider = mock[AuthenticationProvider]
-      }
-
-      implicit val encryptedStringFormats = JsonStringEncryption
-      implicit val decryptedStringFormats = JsonStringDecryption
-      implicit val format = Json.format[LoginDetails]
-
-      val csrfToken = "csrfToken" -> SignedTokenProvider.generateToken
-      val authToken = SessionKeys.authToken -> "some-bearer-token"
-      val userToken = GatekeeperSessionKeys.LoggedInUser -> "userName"
-
-      val aLoggedInRequest = FakeRequest().withSession(csrfToken, authToken, userToken)
-      val aLoggedOutRequest = FakeRequest().withSession(csrfToken)
-
+      def authProvider = mock[AuthenticationProvider]
     }
 
-    "loginPage" should {
-      "be loaded with not authenticated user" in new Setup {
-        val result = await(underTest.loginPage()(aLoggedOutRequest))
-        status(result) shouldBe 200
-      }
+    implicit val encryptedStringFormats = JsonStringEncryption
+    implicit val decryptedStringFormats = JsonStringDecryption
+    implicit val format = Json.format[LoginDetails]
 
-      "be skipped with an authenticated user" in new Setup {
-        val result = await(underTest.loginPage()(aLoggedInRequest))
-        status(result) shouldBe 303
-      }
+    val csrfToken = "csrfToken" -> SignedTokenProvider.generateToken
+    val authToken = SessionKeys.authToken -> "some-bearer-token"
+    val userToken = GatekeeperSessionKeys.LoggedInUser -> "userName"
+
+    val aLoggedInRequest = FakeRequest().withSession(csrfToken, authToken, userToken)
+    val aLoggedOutRequest = FakeRequest().withSession(csrfToken)
+
+  }
+
+  "loginPage" should {
+    "be loaded with not authenticated user" in new Setup {
+      val result = await(underTest.loginPage()(aLoggedOutRequest))
+      status(result) shouldBe 200
     }
 
-    "authenticateAction" should {
-      "go to dashboard and set cookie when user authenticated successfully" in new Setup {
-        val loginDetails = LoginDetails("userName", Protected("password"))
-        val aValidFormJson = Json.toJson(loginDetails)
-        val successfulAuthentication = SuccessfulAuthentication(BearerToken("bearer-token", DateTime.now().plusMinutes(10)), "userName", None)
+    "be skipped with an authenticated user" in new Setup {
+      val result = await(underTest.loginPage()(aLoggedInRequest))
+      status(result) shouldBe 303
+    }
+  }
 
-        given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
+  "authenticateAction" should {
+    "go to dashboard and set cookie when user authenticated successfully" in new Setup {
+      val loginDetails = LoginDetails("userName", Protected("password"))
+      val aValidFormJson = Json.toJson(loginDetails)
+      val successfulAuthentication = SuccessfulAuthentication(BearerToken("bearer-token", DateTime.now().plusMinutes(10)), "userName", None)
 
-        val result = await(underTest.authenticate()(
-          aLoggedOutRequest.withJsonBody(aValidFormJson)))
-        status(result) shouldBe 303
-        result.header.headers should contain("Location" -> "/api-gatekeeper/dashboard")
-        result.header.headers.get("Set-Cookie") shouldBe defined
+      given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
 
-        session(result).get(SessionKeys.authToken) shouldBe Some("bearer-token")
+      val result = await(underTest.authenticate()(
+        aLoggedOutRequest.withJsonBody(aValidFormJson)))
+      redirectLocation(result) shouldBe Some("/api-gatekeeper/dashboard")
 
-        val cookie = result.header.headers.get("Set-Cookie").get
-        cookie should include("mdtp=")
-        cookie should include("authToken=bearer-token")
-        cookie should include("LoggedInUser=userName")
-      }
+      result.header.headers.get("Set-Cookie") shouldBe defined
 
-      "give 400 when an invalid login form is posted" in new Setup {
-        val result = await(underTest.authenticate()(
-          aLoggedOutRequest.withJsonBody(Json.toJson(LoginDetails("", Protected("password"))))))
-        status(result) shouldBe 400
-      }
-
-      "go to login page if user failed to authenticate" in new Setup {
-        val loginDetails = LoginDetails("userName", Protected("password"))
-        val aValidFormJson = Json.toJson(loginDetails)
-        given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.failed(new InvalidCredentials))
-
-        val result = await(underTest.authenticate()(
-          aLoggedOutRequest.withJsonBody(aValidFormJson)))
-
-        status(result) shouldBe 401
-        bodyOf(result) should include("Invalid user ID or password. Try again.")
-      }
+      session(result).get(SessionKeys.authToken) shouldBe Some("bearer-token")
     }
 
-    "logoutAction" should {
-      "take to login page with cleared auth cookie" in new Setup {
-        val result = await(underTest.logout()(aLoggedInRequest))
-        status(result) shouldBe 303
-        result.header.headers should contain("Location" -> "/api-gatekeeper/login")
-        session(result) get (SessionKeys.authToken) shouldBe None
-      }
+    "give 400 when an invalid login form is posted" in new Setup {
+      val result = await(underTest.authenticate()(
+        aLoggedOutRequest.withJsonBody(Json.toJson(LoginDetails("", Protected("password"))))))
+      status(result) shouldBe 400
     }
+
+    "go to login page if user failed to authenticate" in new Setup {
+      val loginDetails = LoginDetails("userName", Protected("password"))
+      val aValidFormJson = Json.toJson(loginDetails)
+      given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.failed(new InvalidCredentials))
+
+      val result = await(underTest.authenticate()(
+        aLoggedOutRequest.withJsonBody(aValidFormJson)))
+
+      status(result) shouldBe 401
+      bodyOf(result) should include("Invalid user ID or password. Try again.")
+    }
+  }
+
+  "logoutAction" should {
+    "take to login page with cleared auth cookie" in new Setup {
+      val result = await(underTest.logout()(aLoggedInRequest))
+      redirectLocation(result) shouldBe Some("/api-gatekeeper/login")
+    }
+  }
 }

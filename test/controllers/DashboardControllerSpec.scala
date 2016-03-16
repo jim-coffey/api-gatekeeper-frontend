@@ -25,6 +25,7 @@ import org.mockito.BDDMockito._
 import org.mockito.Matchers._
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.Json
+import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
 import play.filters.csrf.CSRF.SignedTokenProvider
 import uk.gov.hmrc.crypto.Protected
@@ -66,8 +67,7 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
         val result = await(underTest.dashboardPage()(aLoggedOutRequest))
 
-        status(result) shouldBe 303
-        result.header.headers should contain("Location" -> "/api-gatekeeper/login")
+        redirectLocation(result) shouldBe Some("/api-gatekeeper/login")
       }
 
 
