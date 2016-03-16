@@ -5,17 +5,9 @@
 
 @import uk.gov.hmrc.play.views.html.layouts
 
-@betaBanner = {
-  @layouts.betaBanner(
-    userLoggedIn = userFullName != None,
-    betaFeedbackUrl = appConfig.betaFeedbackUrl,
-    betaFeedbackUnauthenticatedUrl = appConfig.betaFeedbackUnauthenticatedUrl,
-    showFeedbackLinkInBetaBanner = true)
-}
-
 @serviceInfo = {
   @layouts.serviceInfo(
-    betaBanner = betaBanner,
+    betaBanner = HtmlFormat.empty,
     includeGridWrapper = false,
     serviceInfoContent = None)
 }
