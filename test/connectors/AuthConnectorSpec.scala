@@ -20,7 +20,6 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import config.WSHttp
 import connectors.AuthConnector.InvalidCredentials
 import model.{BearerToken, LoginDetails, Role}
-import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterEach, Matchers}
 import play.api.libs.json.Json
@@ -30,6 +29,7 @@ import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 
 class AuthConnectorSpec extends UnitSpec with Matchers with ScalaFutures with WiremockSugar with BeforeAndAfterEach with WithFakeApplication {
+
   trait Setup {
     implicit val hc = HeaderCarrier()
 
@@ -38,26 +38,19 @@ class AuthConnectorSpec extends UnitSpec with Matchers with ScalaFutures with Wi
       override val authUrl: String = s"$wireMockUrl/auth/authenticate/user"
     }
 
-    case class AuthBackendResponse(access_token: BearerToken, group: Option[String], roles: Option[Set[Role]])
+    case class AuthResponse(access_token: BearerToken, group: Option[String], roles: Option[Set[Role]])
 
-    implicit val format = Json.format[AuthBackendResponse]
+    implicit val format = Json.format[AuthResponse]
   }
 
   "login" should {
 
+    def authenticateRequestJson = """{"userName":"userName","password":"YIGhtHYYNZtgiZgNKhZ0UQ=="}"""
+    def authenticateResponseJson = """{"access_token":{"authToken":"bearer_token","expiry":1458126423541},"group":"group","roles":[{"scope":"api","name":"gatekeeper"}]}"""
+
+    val loginDetails = LoginDetails("userName", Protected("password"))
     "successfully authenticate user" in new Setup {
-      val loginDetails = LoginDetails("userName", Protected("password"))
-      val authenticateRequestJson = Json.toJson(loginDetails).toString()
-      val authenticateResponseJson = Json.toJson(
-        AuthBackendResponse(
-          BearerToken("bearer_token", DateTime.now().plusMinutes(10)),
-          Some("group"),
-          Some(Set(Role.APIGatekeeper))
-        )).toString()
-
-
       stubFor(post(urlEqualTo("/auth/authenticate/user"))
-        .withRequestBody(equalToJson(authenticateRequestJson))
         .willReturn(aResponse().withStatus(200)
           .withHeader("Content-Type", "application/json")
           .withBody(authenticateResponseJson)
@@ -71,8 +64,6 @@ class AuthConnectorSpec extends UnitSpec with Matchers with ScalaFutures with Wi
     }
 
     "return InvalidCredentials if authentication failed" in new Setup {
-      val loginDetails = LoginDetails("userName", Protected("password"))
-
       stubFor(post(urlEqualTo("/auth/authenticate/user"))
         .willReturn(aResponse().withStatus(401)))
 
