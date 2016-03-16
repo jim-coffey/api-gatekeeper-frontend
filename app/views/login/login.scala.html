@@ -1,31 +1,32 @@
-@(form: Form[controllers.LoginForm])(implicit request: Request[_])
+@(loginForm: Form[model.LoginDetails])(implicit request: Request[_])
 
-@main_template(title = "Sign in to Api Gatekeeper Frontend", bodyClasses = None) {
+@main(title = "API Gatekeeper login", userFullName = None ) {
 
     <header>
         <h1>Sign in</h1>
     </header>
 
-    @helper.form(action = controllers.routes.UserAccount.authenticateAction) {
-        <div class="form-field-group">
+    @helper.form(action = controllers.routes.AccountController.authenticate) {
+        <fieldset>
             @helper.CSRF.formField
 
-            <div class="form-field @if(form.errors("invalidCredentials").nonEmpty){form-field--error fields-aligned}">
-
-                <div class="form-field @if(form.errors("username").nonEmpty){form-field--error fields-aligned}">
-                    <label class="label--full-length" for="username"><strong>Username</strong></label>
-                    <input type="text" id="username" name="username" value="@form.data.getOrElse("username", "")" class="input--medium" aria-describedby="usernameError"/>
+            <div class="form-field-group @if(loginForm.hasErrors) {error}">
+                @loginForm.globalErrors.map{ error =>
+                    <span class="error-notification password">@Messages(error.message)</span>
+                }
+                <div class="form-field">
+                    <label class="label--inline" for="userName">Username</label>
+                    <input type="text" id="userName" name="userName" required />
                 </div>
-                <div class="form-field @if(form.errors("password").nonEmpty){form-field--error fields-aligned}">
-                    <label class="label--full-length" for="password"><strong>Password</strong></label>
-                    <input type="password" id="password" name="password" class="input--medium"/>
+                <div class="form-field">
+                    <label class="label--inline" for="password">Password</label>
+                    <input type="password" id="password" name="password" required />
                 </div>
             </div>
+        </fieldset>
 
-            <div class="form-field form-field--submit">
-                <button id="submit" class="button" type="submit">Sign in</button>
-            </div>
-        </div>
+        <button type="submit" name="action" value="submit">Sign in</button>
+
     }
 
 }

@@ -25,18 +25,25 @@ trait AppConfig {
   val analyticsHost: String
   val reportAProblemPartialUrl: String
   val reportAProblemNonJSUrl: String
+  val nameDisplayLimit: Int
+  val betaFeedbackUrl: String
+  val betaFeedbackUnauthenticatedUrl: String
 }
 
 object FrontendAppConfig extends AppConfig with ServicesConfig {
+
+  override lazy val nameDisplayLimit = getConfInt("name.display.limit", 20)
 
   private def loadConfig(key: String) = configuration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
 
   private val contactHost = configuration.getString("contact-frontend.host").getOrElse("")
   private val contactFormServiceIdentifier = "MyService"
-
   override lazy val assetsPrefix = loadConfig("assets.url") + loadConfig("assets.version")
   override lazy val analyticsToken = loadConfig("google-analytics.token")
   override lazy val analyticsHost = loadConfig("google-analytics.host")
   override lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   override lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+
+  override lazy val betaFeedbackUrl = s"$contactHost/contact/beta-feedback"
+  override lazy val betaFeedbackUnauthenticatedUrl = s"$contactHost/contact/beta-feedback-unauthenticated"
 }

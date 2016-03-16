@@ -16,28 +16,26 @@
 
 package controllers
 
-import play.api.data.Form
+import connectors.AuthConnector
+import model.Role
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
-import play.api.mvc._
-import views.html.login._
-import views.html.dashboard._
+import utils.{GatekeeperAuthProvider, GatekeeperAuthWrapper}
+import views.html.dashboard.dashboard
+
 import scala.concurrent.Future
 
-object UserAccount extends UserAccount
+object DashboardController extends DashboardController {
+  override def authProvider = GatekeeperAuthProvider
 
-trait UserAccount extends FrontendController {
+  override def authConnector = AuthConnector
+}
 
-  val loginForm: Form[LoginForm] = LoginForm.form
 
-  val loginPage = Action.async { implicit request =>
-		Future.successful(Ok(login(loginForm)))
-  }
+trait DashboardController extends FrontendController with GatekeeperAuthWrapper {
 
-  val authenticateAction = Action.async { implicit request =>
-    val requestForm = loginForm.bindFromRequest
-    requestForm.fold(
-      errors => Future.successful(BadRequest(login( errors))),
-      validLoginForm =>  Future.successful(Ok(dashboard()))
-    )
+  val dashboardPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
+    implicit request => implicit hc =>
+      Future.successful(Ok(dashboard()))
   }
 }

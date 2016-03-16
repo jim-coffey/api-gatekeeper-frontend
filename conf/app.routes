@@ -1,4 +1,8 @@
 # microservice specific routes
 
-GET        /login             controllers.UserAccount.loginPage
-POST       /login             controllers.UserAccount.authenticateAction
+GET        /login             controllers.AccountController.loginPage
+POST       /login             controllers.AccountController.authenticate
+
+GET        /logout            controllers.AccountController.logout
+
+GET        /dashboard         controllers.DashboardController.dashboardPage

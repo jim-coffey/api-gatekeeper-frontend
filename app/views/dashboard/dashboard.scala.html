@@ -1,7 +1,7 @@
-@()(implicit request: Request[_])
+@()(implicit request: Request[_], userFullName: Option[String])
 
-@main_template(title = "Api Gatekeeper Dashboard", bodyClasses = None) {
 
+@main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
     <header>
         <h1>Gatekeeper's Dashboard</h1>
     </header>

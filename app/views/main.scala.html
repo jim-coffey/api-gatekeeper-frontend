@@ -1,0 +1,62 @@
+@(title: String,
+  mainContentHeader: Html = HtmlFormat.empty,
+  userFullName: Option[String] = None,
+  appConfig: config.AppConfig = config.FrontendAppConfig)(mainContent: Html)(implicit request: Request[_])
+
+@import uk.gov.hmrc.play.views.html.layouts
+
+@betaBanner = {
+  @layouts.betaBanner(
+    userLoggedIn = userFullName != None,
+    betaFeedbackUrl = appConfig.betaFeedbackUrl,
+    betaFeedbackUnauthenticatedUrl = appConfig.betaFeedbackUnauthenticatedUrl,
+    showFeedbackLinkInBetaBanner = true)
+}
+
+@serviceInfo = {
+  @layouts.serviceInfo(
+    betaBanner = betaBanner,
+    includeGridWrapper = false,
+    serviceInfoContent = None)
+}
+
+@content = {
+  @layouts.main_content(
+    article = layouts.article(content = mainContent, includeGridWrapper = false),
+    mainContentHeader = mainContentHeader,
+    serviceInfo = serviceInfo,
+    getHelpForm = HtmlFormat.empty
+  )
+}
+
+@bodyEnd = {
+  @layouts.footer(
+    analyticsToken = Some(appConfig.analyticsToken),
+    analyticsHost = appConfig.analyticsHost,
+    assetsPrefix = appConfig.assetsPrefix,
+    ssoUrl = None,
+    scriptElem = None,
+    gaCalls = None)
+}
+
+@insideHeader = {
+  @layouts.header_nav(
+    navTitle = Some("API Gatekeeper"),
+    navTitleLink = None,
+    showBetaLink = false,
+    navLinks = Some(include.headerNavLinks(NavigationHelper.navLinks(userFullName)))
+  )
+  }
+
+
+@views.html.layouts.govuk_template(
+  title = Some(title),
+  bodyClasses = None)(
+  head = layouts.head(assetsPrefix = appConfig.assetsPrefix, linkElem = None, headScripts = None),
+  bodyEnd = bodyEnd,
+  insideHeader = insideHeader,
+  afterHeader = HtmlFormat.empty,
+  footerTop = HtmlFormat.empty,
+  footerLinks = Some(layouts.footer_links()),
+  nav = true)(content)
+

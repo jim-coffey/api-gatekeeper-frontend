@@ -1,0 +1,6 @@
+@import controllers.NavLink
+@(navLinks: Seq[NavLink])
+
+@for(link <- navLinks) {
+   <li @if(link == navLinks.last) {class="hard--right"}><a class="align--middle inline-block@if(link.truncate) { truncate truncate--small no-wrap text--center}" href="@{link.href}">@{link.label}</a></li>
+}
