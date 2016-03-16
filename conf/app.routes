@@ -6,3 +6,6 @@ POST       /login             controllers.AccountController.authenticate
 GET        /logout            controllers.AccountController.logout
 
 GET        /dashboard         controllers.DashboardController.dashboardPage
+
+
+->         /template          template.Routes
