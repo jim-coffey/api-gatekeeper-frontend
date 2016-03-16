@@ -30,15 +30,6 @@ import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 
 class AuthConnectorSpec extends UnitSpec with Matchers with ScalaFutures with WiremockSugar with BeforeAndAfterEach with WithFakeApplication {
-
-  override def beforeEach() {
-    startMockServer()
-  }
-
-  override def afterEach() {
-    stopMockServer()
-  }
-
   trait Setup {
     implicit val hc = HeaderCarrier()
 
