@@ -18,12 +18,8 @@ package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import config.WSHttp
-import connectors.AuthConnector.InvalidCredentials
-import model.{BearerToken, LoginDetails, Role}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterEach, Matchers}
-import play.api.libs.json.Json
-import uk.gov.hmrc.crypto.Protected
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
@@ -36,38 +32,6 @@ class AuthConnectorSpec extends UnitSpec with Matchers with ScalaFutures with Wi
     val connector = new AuthConnector {
       override val http = WSHttp
       override val authUrl: String = s"$wireMockUrl/auth/authenticate/user"
-    }
-
-    case class AuthResponse(access_token: BearerToken, group: Option[String], roles: Option[Set[Role]])
-
-    implicit val format = Json.format[AuthResponse]
-  }
-
-  "login" should {
-
-    def authenticateRequestJson = """{"userName":"userName","password":"YIGhtHYYNZtgiZgNKhZ0UQ=="}"""
-    def authenticateResponseJson = """{"access_token":{"authToken":"bearer_token","expiry":1458126423541},"group":"group","roles":[{"scope":"api","name":"gatekeeper"}]}"""
-
-    val loginDetails = LoginDetails("userName", Protected("password"))
-    "successfully authenticate user" in new Setup {
-      stubFor(post(urlEqualTo("/auth/authenticate/user"))
-        .willReturn(aResponse().withStatus(200)
-          .withHeader("Content-Type", "application/json")
-          .withBody(authenticateResponseJson)
-        ))
-
-      val result = await(connector.login(loginDetails))
-      verify(1, postRequestedFor(urlMatching("/auth/authenticate/user")).withRequestBody(equalToJson(authenticateRequestJson)))
-
-      result.roles.get shouldBe Set(Role.APIGatekeeper)
-      result.access_token.authToken shouldBe "bearer_token"
-    }
-
-    "return InvalidCredentials if authentication failed" in new Setup {
-      stubFor(post(urlEqualTo("/auth/authenticate/user"))
-        .willReturn(aResponse().withStatus(401)))
-
-      intercept[InvalidCredentials](await(connector.login(loginDetails)))
     }
   }
 
