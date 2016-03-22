@@ -63,3 +63,7 @@ object GatekeeperSessionKeys {
   val LoggedInUser = "LoggedInUser"
 }
 
+class ApproveUpliftPreconditionFailed extends Throwable
+
+sealed trait ApproveUpliftSuccessful
+case object ApproveUpliftSuccessful extends ApproveUpliftSuccessful

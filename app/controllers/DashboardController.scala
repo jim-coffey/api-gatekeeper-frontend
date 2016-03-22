@@ -16,7 +16,7 @@
 
 package controllers
 
-import connectors.AuthConnector
+import connectors.{ApplicationConnector, AuthConnector}
 import model.Role
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
@@ -29,13 +29,24 @@ object DashboardController extends DashboardController {
   override def authProvider = GatekeeperAuthProvider
 
   override def authConnector = AuthConnector
+
+  override val applicationConnector = ApplicationConnector
 }
 
-
 trait DashboardController extends FrontendController with GatekeeperAuthWrapper {
+
+  val applicationConnector: ApplicationConnector
 
   val dashboardPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
       Future.successful(Ok(dashboard()))
+  }
+
+  def approveUplift(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
+    implicit request => implicit hc =>
+      applicationConnector.approveUplift(appId, loggedIn.get) map {
+        ApproveUpliftSuccessful => Ok(dashboard())
+      }
+
   }
 }

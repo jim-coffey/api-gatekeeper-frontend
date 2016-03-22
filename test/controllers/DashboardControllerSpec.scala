@@ -16,11 +16,12 @@
 
 package controllers
 
-import connectors.AuthConnector
 import connectors.AuthConnector.InvalidCredentials
+import connectors.{ApplicationConnector, AuthConnector}
 import model.LoginDetails.{JsonStringDecryption, JsonStringEncryption}
 import model._
 import org.joda.time.DateTime
+import org.mockito.ArgumentCaptor
 import org.mockito.BDDMockito._
 import org.mockito.Matchers._
 import org.scalatest.mock.MockitoSugar
@@ -43,6 +44,7 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
       val underTest = new DashboardController {
         val authConnector = mock[AuthConnector]
         val authProvider = mock[AuthenticationProvider]
+        val applicationConnector = mock[ApplicationConnector]
       }
 
       implicit val encryptedStringFormats = JsonStringEncryption
@@ -97,6 +99,29 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
         bodyOf(result) should include("Only Authorised users can access the requested page")
       }
 
+    }
+
+    "approveUplift" should {
+      val applicationId = "applicationId"
+      val userName = "userName"
+
+      "call backend with correct application id and gatekeeper id" in new Setup {
+        val loginDetails = LoginDetails("userName", Protected("password"))
+        val successfulAuthentication = SuccessfulAuthentication(BearerToken("bearer-token", DateTime.now().plusMinutes(10)), userName, None)
+
+        given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
+        given(underTest.authConnector.authorized(any[Role])(any[HeaderCarrier])).willReturn(Future.successful(true))
+
+        val appIdCaptor = ArgumentCaptor.forClass(classOf[String])
+        val gatekeeperIdCaptor = ArgumentCaptor.forClass(classOf[String])
+
+        given(underTest.applicationConnector.approveUplift(appIdCaptor.capture(), gatekeeperIdCaptor.capture())(any[HeaderCarrier])).willReturn(Future.successful(ApproveUpliftSuccessful))
+
+        val result = await(underTest.approveUplift(applicationId)(aLoggedInRequest))
+
+        appIdCaptor.getValue shouldBe applicationId
+        gatekeeperIdCaptor.getValue shouldBe userName
+      }
     }
 
   }

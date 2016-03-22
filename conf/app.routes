@@ -1,11 +1,13 @@
 # microservice specific routes
 
-GET        /login             controllers.AccountController.loginPage
-POST       /login             controllers.AccountController.authenticate
+GET         /login                                  controllers.AccountController.loginPage
+POST        /login                                  controllers.AccountController.authenticate
 
-GET        /logout            controllers.AccountController.logout
+GET         /logout                                 controllers.AccountController.logout
 
-GET        /dashboard         controllers.DashboardController.dashboardPage
+GET         /dashboard                              controllers.DashboardController.dashboardPage
 
 
-->         /template          template.Routes
+->          /template                               template.Routes
+
+POST        /applications/:id/approve-uplift        controllers.DashboardController.approveUplift(id: String)

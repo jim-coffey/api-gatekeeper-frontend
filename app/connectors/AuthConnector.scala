@@ -43,7 +43,7 @@ trait AuthConnector {
   class InvalidCredentials extends RuntimeException("Login failed")
 
   val authUrl: String
-  val http: HttpPost with HttpGet with HttpDelete
+  val http: HttpPost with HttpGet
 
   def login(loginDetails: LoginDetails)(implicit hc: HeaderCarrier): Future[SuccessfulAuthentication] =
     http.POST[LoginDetails, AuthResponse](authUrl, loginDetails)
@@ -51,7 +51,6 @@ trait AuthConnector {
       .recoverWith {
         case e: Upstream4xxResponse if e.upstreamResponseCode == 401 => Future.failed(new InvalidCredentials)
       }
-
 
   def authorized(role: Role)(implicit hc: HeaderCarrier): Future[Boolean] = authorized(role.scope, Some(role.name))
 
