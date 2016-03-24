@@ -1,0 +1,45 @@
+@()(implicit request: Request[_], userFullName: Option[String])
+
+
+@main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
+<div class="content__body full-width">
+
+    <nav class="breadcrumb-nav">
+        <ul>
+            <li class="breadcrumb-nav__item"><a href="dashboard">Application names</a></li>
+            <li class="breadcrumb-nav__item breadcrumb-nav__item--trail" aria-hidden="true"></li>
+            <li class="breadcrumb-nav__item">application name</li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1 class="flush--top">Application name here</h1>
+    </header>
+
+    <h2 class="heading--reset">Description:</h2>
+    <p class="flush--top">Supporting Barclays’ customers in becoming more tax efficient.</p>
+
+    <h2 class="heading--reset">Submitter:</h2>
+    <p class="flush--top">francis.jackson@@barclays-digital.com</p>
+
+    <form action="">
+
+        <fieldset class="form-field">
+            <legend class="visuallyhidden">Choose approve or reject application</legend>
+            <label class="block-label--stacked">
+                <input type="radio" name="review" id="Approve" value="APPROVE" checked="">Approve
+            </label>
+            <label class="block-label--stacked">
+                <input type="radio" name="review" id="Reject" value="REJECT">Reject
+            </label>
+        </fieldset>
+
+        <div class="form-field">
+            <input type="submit" class="button" role="button" value="Submit"/>
+            <a href="dashboard" class="button button--link">Cancel</a>
+        </div>
+
+    </form>
+
+</div>
+}

@@ -22,6 +22,7 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import utils.{GatekeeperAuthProvider, GatekeeperAuthWrapper}
 import views.html.dashboard.dashboard
+import views.html.review.review
 
 import scala.concurrent.Future
 
@@ -40,6 +41,11 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
   val dashboardPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
       Future.successful(Ok(dashboard()))
+  }
+
+  val reviewPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
+    implicit request => implicit hc =>
+      Future.successful(Ok(review()))
   }
 
   def approveUplift(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {

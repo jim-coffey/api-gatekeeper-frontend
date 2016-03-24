@@ -2,9 +2,61 @@
 
 
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
-    <header>
-        <h1>Gatekeeper's Dashboard</h1>
-    </header>
-
-
+    <div class="content__body full-width">
+        <header>
+            <h1>Application names</h1>
+        </header>
+        <div class="two-col-list full-width">
+            <section class="section--branded two-col-list__col two-col-list__col--left">
+                <h2>Pending</h2>
+                <ul>
+                    <li class="list-item">
+                        <div class="list-item__primary">
+                            <h3 class="list-item__heading">Barclays Tax App</h3>
+                            <p class="list-item__info">submitted: 14.01.2016</p>
+                        </div>
+                        <div class="list-item__secondary">
+                            <a class="list-item__link list-item__link--right" href="review">Review</a>
+                        </div>
+                    </li>
+                    <li class="list-item">
+                        <div class="list-item__primary">
+                            <h3 class="list-item__heading">Barclays Tax App</h3>
+                            <p class="list-item__info">submitted: 14.01.2016</p>
+                        </div>
+                        <div class="list-item__secondary">
+                            <a class="list-item__link list-item__link--right" href="review">Review</a>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+            <section class="section--branded two-col-list__col two-col-list__col--right">
+                <h2>Approved</h2>
+                <ul>
+                    <li class="list-item">
+                        <div class="list-item__primary">
+                            <h3 class="list-item__heading">
+                                <a class="list-item__link list-item__link--left" href="">Barclays Tax App</a>
+                            </h3>
+                            <p class="list-item__info">submitted: 14.01.2016</p>
+                        </div>
+                        <div class="list-item__secondary">
+                            <span class="status status--verified">verified</span>
+                        </div>
+                    </li>
+                    <li class="list-item">
+                        <div class="list-item__primary">
+                            <h3 class="list-item__heading">
+                                <a class="list-item__link list-item__link--left" href="">Barclays Tax App</a>
+                            </h3>
+                            <p class="list-item__info">submitted: 14.01.2016</p>
+                        </div>
+                        <div class="list-item__secondary">
+                            <span class="status status--not-verified">not yet verified</span>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </div>
+    </div>
 }
