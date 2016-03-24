@@ -2,7 +2,7 @@
 
 
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
-<div class="content__body full-width">
+<div class="content__body">
 
     <nav class="breadcrumb-nav">
         <ul>
@@ -24,15 +24,29 @@
 
     <form action="">
 
-        <fieldset class="form-field">
+        <fieldset class="form-field-group js-toggle"
+                  data-target="rejection-reason"
+                  data-trigger="js-toggle-trigger"
+                  data-open="reject-app"
+                  data-close="approve-app"
+                  aria-hidden="true">
             <legend class="visuallyhidden">Choose approve or reject application</legend>
             <label class="block-label--stacked">
-                <input type="radio" name="review" id="Approve" value="APPROVE" checked="">Approve
+                <input type="radio" id="approve-app" name="review" value="APPROVE" checked="">Approve
             </label>
             <label class="block-label--stacked">
-                <input type="radio" name="review" id="Reject" value="REJECT">Reject
+                <input type="radio" id="reject-app" name="review" value="REJECT">Reject
             </label>
         </fieldset>
+
+        <div id="rejection-reason"
+             class="form-field toggle-target"
+             aria-expanded="false"
+             aria-visible="false">
+            <label for="rejection-text"><strong>Enter reason for rejection:</strong></label>
+            <p class="form-hint flush--top">Insert applicable guideline from <a href="#">naming guidelines</a>.</p>
+            <textarea id="rejection-text" class="textarea--medium flush--top"></textarea>
+        </div>
 
         <div class="form-field">
             <input type="submit" class="button" role="button" value="Submit"/>
