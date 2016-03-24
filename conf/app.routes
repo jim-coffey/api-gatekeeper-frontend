@@ -7,7 +7,7 @@ GET         /logout                                 controllers.AccountControlle
 
 GET        /dashboard         controllers.DashboardController.dashboardPage
 GET        /review            controllers.DashboardController.reviewPage
-
+GET        /approved          controllers.DashboardController.approvedApplicationPage
 
 ->          /template                               template.Routes
 

@@ -1,0 +1,44 @@
+@()(implicit request: Request[_], userFullName: Option[String])
+
+
+@main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
+<div class="content__body">
+
+    <nav class="breadcrumb-nav">
+        <ul>
+            <li class="breadcrumb-nav__item"><a href="dashboard">Application names</a></li>
+            <li class="breadcrumb-nav__item breadcrumb-nav__item--trail" aria-hidden="true"></li>
+            <li class="breadcrumb-nav__item">application name</li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1 class="flush--top">Application name here</h1>
+    </header>
+
+    <h2 class="heading--reset">Description:</h2>
+    <p class="flush--top">Supporting Barclays’ customers in becoming more tax efficient.</p>
+
+    <h2 class="heading--reset">Submitter:</h2>
+    <p>John Smith</p>
+    <p class="flush--top">francis.jackson@@barclays-digital.com</p>
+
+    <h2>Admins:</h2>
+    <table>
+        <caption>Table showing administrators</caption>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Mark Reese</td>
+            <td>mark.reese@@gmail.com</td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+}
