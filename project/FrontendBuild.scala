@@ -33,19 +33,21 @@ private object AppDependencies {
   abstract class TestDependencies(scope: String) {
     lazy val test: Seq[ModuleID] = Seq(
       "org.scalatest" %% "scalatest" % "2.2.5" % scope,
+      "org.scalatestplus" %% "play" % "1.2.0" % scope,
       "org.pegdown" % "pegdown" % "1.4.2" % scope,
       "org.jsoup" % "jsoup" % "1.7.3" % scope,
       "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
       "uk.gov.hmrc" %% "hmrctest" % "1.4.0" % scope,
-      "com.github.tomakehurst" % "wiremock" % "1.57" % scope
+      "com.github.tomakehurst" % "wiremock" % "1.57" % scope,
+      "org.seleniumhq.selenium" % "selenium-java" % "2.48.2" % scope
     )
   }
 
   object Test extends TestDependencies("test")
 
-  object IntegrationTest extends TestDependencies("it")
+  object AcceptanceTest extends TestDependencies("acceptance")
 
-  def apply() = compile ++ Test.test ++ IntegrationTest.test
+  def apply() = compile ++ Test.test ++ AcceptanceTest.test
 }
 
 

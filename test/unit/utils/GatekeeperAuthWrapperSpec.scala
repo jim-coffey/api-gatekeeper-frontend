@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package utils
+package unit.utils
 
 import connectors.AuthConnector
 import model.{GatekeeperSessionKeys, Role}
@@ -26,6 +26,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.http.{HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import utils.{GatekeeperAuthProvider, GatekeeperAuthWrapper}
 
 import scala.concurrent.Future
 

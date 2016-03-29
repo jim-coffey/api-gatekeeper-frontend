@@ -17,13 +17,15 @@
 package controllers
 
 import connectors.{ApplicationConnector, AuthConnector}
-import model.Role
+import model.State.{State, _}
+import model.{ApplicationWithUpliftRequest, Role}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import utils.{GatekeeperAuthProvider, GatekeeperAuthWrapper}
-import views.html.dashboard.dashboard
+import views.html.approvedApplication._
+import views.html.dashboard._
+
 import views.html.review.review
-import views.html.approvedApplication.approved
 
 import scala.concurrent.Future
 
@@ -41,7 +43,19 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
 
   val dashboardPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
-      Future.successful(Ok(dashboard()))
+
+      def applicationsForDashboard(apps: Seq[ApplicationWithUpliftRequest]): Map[String, Seq[ApplicationWithUpliftRequest]] = {
+        val grouped: Map[State, Seq[ApplicationWithUpliftRequest]] = apps.groupBy(_.state)
+        val pendingApproval = grouped.getOrElse(PENDING_GATEKEEPER_APPROVAL, Seq())
+        val pendingVerification = grouped.getOrElse(PENDING_REQUESTER_VERIFICATION, Seq()) ++ grouped.getOrElse(PRODUCTION, Seq())
+
+        Map("pendingApproval" -> pendingApproval, "pendingVerification" -> pendingVerification)
+      }
+
+      for {
+        apps <- applicationConnector.fetchApplications()
+        mappedApps = applicationsForDashboard(apps)
+      } yield Ok(dashboard(mappedApps))
   }
 
   val reviewPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
@@ -57,8 +71,8 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
   def approveUplift(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
       applicationConnector.approveUplift(appId, loggedIn.get) map {
-        ApproveUpliftSuccessful => Ok(dashboard())
+        ApproveUpliftSuccessful => Redirect(controllers.routes.DashboardController.dashboardPage)
       }
-
   }
+
 }

@@ -18,9 +18,9 @@ package connectors
 
 import config.WSHttp
 import connectors.AuthConnector._
-import model.{ApproveUpliftPreconditionFailed, ApproveUpliftSuccessful}
+import model.{FetchApplicationsFailed, ApplicationWithUpliftRequest, ApproveUpliftPreconditionFailed, ApproveUpliftSuccessful}
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpPost, Upstream4xxResponse}
+import uk.gov.hmrc.play.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -49,5 +49,10 @@ trait ApplicationConnector {
         case e: Upstream4xxResponse if (e.upstreamResponseCode == 412) => throw new ApproveUpliftPreconditionFailed
       }
 
-
+  def fetchApplications()(implicit hc: HeaderCarrier): Future[Seq[ApplicationWithUpliftRequest]] = {
+    http.GET[Seq[ApplicationWithUpliftRequest]](s"$applicationBaseUrl/gatekeeper/applications")
+      .recover {
+        case e: Upstream5xxResponse => throw new FetchApplicationsFailed
+      }
+  }
 }

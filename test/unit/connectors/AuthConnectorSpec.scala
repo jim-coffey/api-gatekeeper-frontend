@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package connectors
+package unit.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import config.WSHttp
+import connectors.AuthConnector
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterEach, Matchers}
 import uk.gov.hmrc.play.http.HeaderCarrier

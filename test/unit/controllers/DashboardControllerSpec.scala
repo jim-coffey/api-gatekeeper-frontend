@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package controllers
+package unit.controllers
 
-import connectors.AuthConnector.InvalidCredentials
 import connectors.{ApplicationConnector, AuthConnector}
+import connectors.AuthConnector.InvalidCredentials
+import controllers.DashboardController
 import model.LoginDetails.{JsonStringDecryption, JsonStringEncryption}
 import model._
 import org.joda.time.DateTime
@@ -79,6 +80,7 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
         given(underTest.authConnector.authorized(any[Role])(any[HeaderCarrier])).willReturn(Future.successful(true))
+        given(underTest.applicationConnector.fetchApplications()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[ApplicationWithUpliftRequest]))
 
         val result = await(underTest.dashboardPage()(aLoggedInRequest))
 

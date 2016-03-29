@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package connectors
+package unit.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import config.WSHttp
-import model.{ApproveUpliftPreconditionFailed, ApproveUpliftSuccessful}
+import connectors.ApplicationConnector
+import model.{FetchApplicationsFailed, ApproveUpliftPreconditionFailed, ApproveUpliftSuccessful}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterEach, Matchers}
 import uk.gov.hmrc.play.http.HeaderCarrier
@@ -60,6 +61,27 @@ class ApplicationConnectorSpec extends UnitSpec with Matchers with ScalaFutures 
       verify(1, postRequestedFor(urlPathEqualTo(s"/application/$applicationId/approve-uplift"))
         .withHeader("Authorization", equalTo(authToken))
         .withRequestBody(equalTo( """{"gatekeeperUserId":"loggedin.gatekeeper"}""")))
+    }
+  }
+
+  "fetchApplications" should {
+    "retrieve all applications pending uplift approval" in new Setup {
+      stubFor(get(urlEqualTo(s"/gatekeeper/applications")).willReturn(aResponse().withStatus(200)
+        .withBody("[]")))
+
+      val result = await(connector.fetchApplications())
+
+      verify(1, getRequestedFor(urlPathEqualTo("/gatekeeper/applications"))
+        .withHeader("Authorization", equalTo(authToken)))
+    }
+
+    "propagate FetchApplicationsFailed exception" in new Setup {
+      stubFor(get(urlEqualTo(s"/gatekeeper/applications")).willReturn(aResponse().withStatus(500)))
+
+      intercept[FetchApplicationsFailed](await(connector.fetchApplications()))
+
+      verify(1, getRequestedFor(urlPathEqualTo(s"/gatekeeper/applications"))
+        .withHeader("Authorization", equalTo(authToken)))
     }
   }
 }
