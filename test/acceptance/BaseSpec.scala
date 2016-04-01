@@ -19,14 +19,11 @@ package acceptance
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
 import org.openqa.selenium.WebDriver
 import org.scalatest._
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
-import play.api.test.{FakeApplication, TestServer}
-
-import scala.util.Try
+import org.scalatestplus.play.OneServerPerSuite
+import play.api.test.FakeApplication
 
 trait BaseSpec extends FeatureSpec with BeforeAndAfterAll with BeforeAndAfterEach with Matchers with NavigationSugar with OneServerPerSuite {
 
@@ -62,5 +59,4 @@ trait BaseSpec extends FeatureSpec with BeforeAndAfterAll with BeforeAndAfterEac
     webDriver.manage().deleteAllCookies()
     WireMock.reset()
   }
-
 }

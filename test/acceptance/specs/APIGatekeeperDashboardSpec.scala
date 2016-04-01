@@ -16,25 +16,31 @@
 
 package acceptance.specs
 
-import acceptance.BaseSpec
+import acceptance.{SignInSugar, BaseSpec}
 import acceptance.pages.{DashboardPage, SignInPage}
 import com.github.tomakehurst.wiremock.client.WireMock._
+import component.matchers.CustomMatchers
+import org.openqa.selenium.By
+import org.scalatest.Matchers
 
-class APIGatekeeperDashboardSpec extends BaseSpec {
+class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers with CustomMatchers {
+
+  val appPendingApprovalId1 = "df0c32b6-bbb7-46eb-ba50-e6e5459162ff"
+  val appPendingApprovalId2 = "a4b47c82-5888-41fd-aa83-da2bbd4679d1"
 
   val applications =
-    """
+    s"""
       |[
       |  {
-      |    "id": "df0c32b6-bbb7-46eb-ba50-e6e5459162ff",
-      |    "name": "First",
+      |    "id": "${appPendingApprovalId2}",
+      |    "name": "Second Application",
       |    "submittedOn": 1458832690624,
       |    "state": "PENDING_GATEKEEPER_APPROVAL"
       |  },
       |  {
-      |    "id": "a4b47c82-5888-41fd-aa83-da2bbd4679d1",
-      |    "name": "Second",
-      |    "submittedOn": 1458818916151,
+      |    "id": "${appPendingApprovalId1}",
+      |    "name": "First Application",
+      |    "submittedOn": 1458659208000,
       |    "state": "PENDING_GATEKEEPER_APPROVAL"
       |  },
       |  {
@@ -52,47 +58,40 @@ class APIGatekeeperDashboardSpec extends BaseSpec {
       |]
     """.stripMargin
 
-  feature("View the applications on the dashboard") {
+  feature("View applications pending gatekeeper approval on the dashboard") {
 
     info("In order to manage uplift application requests")
     info("As a gatekeeper")
-    info("I see a list of applications")
+    info("I see a list of applications pending approval")
 
-    scenario("I see a list of pending application in ascending order by submitted date") {
+    scenario("I see a list of pending applications in ascending order by submitted date") {
 
       stubFor(get(urlEqualTo("/gatekeeper/applications"))
         .willReturn(aResponse().withBody(applications).withStatus(200)))
 
-      signIn
+      signInGatekeeper
       on(DashboardPage)
+
+      DashboardPage.bodyText should containInOrder(List("First Application", "Second Application"))
+      assertPendingApplication(appPendingApprovalId1, "First Application submitted: 22.03.2016 Review")
+      assertPendingApplication(appPendingApprovalId2, "Second Application submitted: 24.03.2016 Review")
     }
 
-    scenario("There are no pending applications.") (pending)
+    scenario("There are no pending applications.") {
+      stubFor(get(urlEqualTo("/gatekeeper/applications"))
+        .willReturn(aResponse().withBody("[]").withStatus(200)))
+
+      signInGatekeeper
+      on(DashboardPage)
+      assertNoPendingApplications()
+    }
   }
 
-  def signIn = {
-    val authBody =
-      """
-        |{
-        | "access_token": {
-        |     "authToken":"Bearer fggjmiJzyVZrR6/e39TimjqHyla3x8kmlTd",
-        |     "expiry":1459365831061
-        |     },
-        |     "expires_in":14400,
-        |     "roles":[{"scope":"api","name":"gatekeeper"}],
-        |     "authority_uri":"/auth/oid/joe.blogs",
-        |     "token_type":"Bearer"
-        |}
-      """.stripMargin
+  private def assertPendingApplication(appId: String, expected: String) = {
+    webDriver.findElement(By.cssSelector(s"[data-pending-$appId]")).getText.replaceAll("\n", " ") shouldBe expected
+  }
 
-    stubFor(post(urlEqualTo("/auth/authenticate/user"))
-      .willReturn(aResponse().withBody(authBody).withStatus(200)))
-
-    stubFor(get(urlEqualTo("/auth/authenticate/user/authorise?scope=api&role=gatekeeper"))
-      .willReturn(aResponse().withStatus(200)))
-
-    goOn(SignInPage)
-
-    SignInPage.signIn("joe.blogs", "password")
+  private def assertNoPendingApplications() = {
+    webDriver.findElement(By.cssSelector(s"[data-pending-none]")).getText shouldBe "There are no pending applications."
   }
 }
