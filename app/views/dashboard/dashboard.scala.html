@@ -14,12 +14,17 @@
                 <section class="section--branded two-col-list__col two-col-list__col--left">
 
                     <h2>Pending</h2>
-                    <ul>
+                    @if(applications("pendingApproval").nonEmpty) {
+                        <ul>
                         @for(application <- applications("pendingApproval")) {
-                            <li class="app-info">
+                            <li data-pending-@{application.id} class="app-info">
                                 <div class="app-info__primary">
-                                    <h3 class="app-info__heading">@{application.name}</h3>
-                                    <p class="app-info__info">submitted: @{dateFormatter.print(application.submittedOn)}</p>
+                                    <h3 class="app-info__heading">@{
+                                        application.name
+                                    }</h3>
+                                    <p class="app-info__info">submitted: @{
+                                        dateFormatter.print(application.submittedOn)
+                                    }</p>
                                 </div>
                                 <div class="app-info__secondary">
                                     <a class="app-info__link" href="@{
@@ -28,7 +33,10 @@
                                 </div>
                             </li>
                         }
-                    </ul>
+                        </ul>
+                    } else {
+                        <p data-pending-none>There are no pending applications.</p>
+                    }
                 </section>
 
                 <section class="section--branded two-col-list__col two-col-list__col--right">

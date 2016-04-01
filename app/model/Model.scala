@@ -80,6 +80,7 @@ case class ApplicationWithUpliftRequest(id: UUID,
 
 object ApplicationWithUpliftRequest {
 
+  val compareBySubmittedOn = (a: ApplicationWithUpliftRequest, b: ApplicationWithUpliftRequest) => a.submittedOn.isBefore(b.submittedOn)
 
   implicit val formatState = EnumJson.enumFormat(State)
   implicit val format = Json.format[ApplicationWithUpliftRequest]
