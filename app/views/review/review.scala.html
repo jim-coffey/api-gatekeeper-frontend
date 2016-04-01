@@ -1,0 +1,59 @@
+@()(implicit request: Request[_], userFullName: Option[String])
+
+
+@main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
+<div class="content__body">
+
+    <nav class="breadcrumb-nav">
+        <ul>
+            <li class="breadcrumb-nav__item"><a href="dashboard">Application names</a></li>
+            <li class="breadcrumb-nav__item breadcrumb-nav__item--trail" aria-hidden="true"></li>
+            <li class="breadcrumb-nav__item">application name</li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1 class="flush--top">Application name here</h1>
+    </header>
+
+    <h2 class="heading--font-reset">Description:</h2>
+    <p class="flush--top">Supporting Barclays’ customers in becoming more tax efficient.</p>
+
+    <h2 class="heading--font-reset">Submitter:</h2>
+    <p class="flush--top">francis.jackson@@barclays-digital.com</p>
+
+    <form action="">
+
+        <fieldset class="form-field-group js-toggle"
+                  data-target="rejection-reason"
+                  data-trigger="js-toggle-trigger"
+                  data-open="reject-app"
+                  data-close="approve-app"
+                  aria-hidden="true">
+            <legend class="visuallyhidden">Choose approve or reject application</legend>
+            <label class="block-label--stacked">
+                <input type="radio" id="approve-app" name="review" value="APPROVE" checked="">Approve
+            </label>
+            <label class="block-label--stacked">
+                <input type="radio" id="reject-app" name="review" value="REJECT">Reject
+            </label>
+        </fieldset>
+
+        <div id="rejection-reason"
+             class="form-field toggle-target"
+             aria-expanded="false"
+             aria-visible="false">
+            <label for="rejection-text"><strong>Enter reason for rejection:</strong></label>
+            <p class="form-hint flush--top">Insert applicable guideline from <a href="#">naming guidelines</a>.</p>
+            <textarea id="rejection-text" class="textarea--3-4 flush--top"></textarea>
+        </div>
+
+        <div class="form-field">
+            <input type="submit" class="button" role="button" value="Submit"/>
+            <a href="dashboard" class="button button--link">Cancel</a>
+        </div>
+
+    </form>
+
+</div>
+}

@@ -5,8 +5,9 @@ POST        /login                                  controllers.AccountControlle
 
 GET         /logout                                 controllers.AccountController.logout
 
-GET         /dashboard                              controllers.DashboardController.dashboardPage
-
+GET        /dashboard         controllers.DashboardController.dashboardPage
+GET        /review            controllers.DashboardController.reviewPage
+GET        /approved          controllers.DashboardController.approvedApplicationPage
 
 ->          /template                               template.Routes
 

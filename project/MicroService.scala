@@ -1,7 +1,6 @@
 import sbt.Keys._
-import sbt.Tests.{SubProcess, Group}
+import sbt.Tests.{Group, SubProcess}
 import sbt._
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 
 trait MicroService {
@@ -17,6 +16,11 @@ trait MicroService {
   lazy val plugins : Seq[Plugins] = Seq.empty
   lazy val playSettings : Seq[Setting[_]] = Seq.empty
 
+  def unitFilter(name: String): Boolean = !acceptanceFilter(name)
+
+  def acceptanceFilter(name: String): Boolean = name startsWith "acceptance"
+
+
   lazy val microservice = Project(appName, file("."))
     .enablePlugins(Seq(play.PlayScala) ++ plugins : _*)
     .settings(playSettings : _*)
@@ -31,14 +35,22 @@ trait MicroService {
       fork in Test := false,
       retrieveManaged := true
     )
-    .configs(IntegrationTest)
-    .settings(inConfig(IntegrationTest)(Defaults.testSettings) : _*)
+    .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
+    .settings(testOptions in Test := Seq(Tests.Filter(unitFilter)),
+      addTestReportOption(Test, "test-reports"),
+      unmanagedSourceDirectories in AcceptanceTest <<= (baseDirectory in AcceptanceTest)(base => Seq(base / "test/unit")),
+      unmanagedResourceDirectories in AcceptanceTest <<= (baseDirectory in AcceptanceTest)(base => Seq(base / "test/unit"))
+    )
+    .configs(AcceptanceTest)
+    .settings(inConfig(AcceptanceTest)(Defaults.testSettings): _*)
     .settings(
-      Keys.fork in IntegrationTest := false,
-      unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
-      addTestReportOption(IntegrationTest, "int-test-reports"),
-      testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
-      parallelExecution in IntegrationTest := false)
+      testOptions in AcceptanceTest := Seq(Tests.Filter(acceptanceFilter)),
+      unmanagedSourceDirectories in AcceptanceTest <<= (baseDirectory in AcceptanceTest)(base => Seq(base / "test")),
+      unmanagedResourceDirectories in AcceptanceTest <<= (baseDirectory in AcceptanceTest)(base => Seq(base / "test")),
+      Keys.fork in AcceptanceTest := false,
+      parallelExecution in AcceptanceTest := false,
+      addTestReportOption(AcceptanceTest, "acceptance-test-reports")
+    )
     .settings(
       resolvers := Seq(
         Resolver.bintrayRepo("hmrc", "releases"),
@@ -50,8 +62,16 @@ trait MicroService {
 
 private object TestPhases {
 
+  val allPhases = "tt->test;test->test;test->compile;compile->compile"
+  val allItPhases = "tit->it;it->it;it->compile;compile->compile"
+
+  lazy val TemplateTest = config("tt") extend Test
+  lazy val TemplateItTest = config("tit") extend IntegrationTest
+  lazy val AcceptanceTest = config("acceptance") extend Test
+
   def oneForkedJvmPerTest(tests: Seq[TestDefinition]) =
     tests map {
       test => new Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq("-Dtest.name=" + test.name))))
     }
 }
+

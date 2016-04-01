@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package controllers
+package unit.controllers
 
+import controllers.AccountController
 import connectors.AuthConnector
 import connectors.AuthConnector.InvalidCredentials
 import model.LoginDetails.{JsonStringDecryption, JsonStringEncryption}

@@ -16,11 +16,14 @@
 
 package model
 
+import java.util.UUID
+
 import org.joda.time.DateTime
 import play.api.libs.json.Json
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Protected}
 
+import model.State.State
 
 case class LoginDetails(userName: String, password: Protected[String])
 
@@ -63,7 +66,29 @@ object GatekeeperSessionKeys {
   val LoggedInUser = "LoggedInUser"
 }
 
+object State extends Enumeration {
+  type State = Value
+  val TESTING, PENDING_GATEKEEPER_APPROVAL, PENDING_REQUESTER_VERIFICATION, PRODUCTION = Value
+
+  implicit val format = EnumJson.enumFormat(State)
+}
+
+case class ApplicationWithUpliftRequest(id: UUID,
+                                        name: String,
+                                        submittedOn: DateTime,
+                                        state: State)
+
+object ApplicationWithUpliftRequest {
+
+
+  implicit val formatState = EnumJson.enumFormat(State)
+  implicit val format = Json.format[ApplicationWithUpliftRequest]
+}
+
 class ApproveUpliftPreconditionFailed extends Throwable
+class FetchApplicationsFailed extends Throwable
+
+class InconsistentDataState(message: String) extends RuntimeException(message)
 
 sealed trait ApproveUpliftSuccessful
 case object ApproveUpliftSuccessful extends ApproveUpliftSuccessful
