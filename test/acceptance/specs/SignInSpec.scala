@@ -59,7 +59,43 @@ class SignInSpec extends BaseSpec {
     }
 
 
-    scenario("Sign in with invalid credentials")(pending)
-  }
+    scenario("Sign in with invalid credentials"){
+        stubFor(post(urlEqualTo("/auth/authenticate/user"))
+          .willReturn(aResponse().withStatus(401)))
 
+        goOn(SignInPage)
+
+        SignInPage.signIn("joe.blogs", "password")
+
+        on(SignInPage)
+        SignInPage.isError shouldBe true
+    }
+
+    scenario("Sign in with unauthorised credentials")  {
+      val body =
+        """
+          |{
+          | "access_token": {
+          |     "authToken":"Bearer fggjmiJzyVZrR6/e39TimjqHyla3x8kmlTd",
+          |     "expiry":1459365831061
+          |     },
+          |     "expires_in":14400,
+          |     "roles":[{"scope":"something","name":"gatekeeper"}],
+          |     "authority_uri":"/auth/oid/joe.blogs",
+          |     "token_type":"Bearer"
+          |}
+        """.stripMargin
+      stubFor(post(urlEqualTo("/auth/authenticate/user"))
+        .willReturn(aResponse().withBody(body).withStatus(200)))
+
+      stubFor(get(urlEqualTo("/auth/authenticate/user/authorise?scope=api&role=gatekeeper"))
+        .willReturn(aResponse().withStatus(401)))
+
+      goOn(SignInPage)
+
+      SignInPage.signIn("joe.blogs", "password")
+      on(DashboardPage)
+      DashboardPage.isUnauthorised shouldBe true
+    }
+  }
 }

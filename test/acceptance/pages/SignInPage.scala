@@ -17,6 +17,7 @@
 package acceptance.pages
 
 import acceptance.WebPage
+import org.openqa.selenium.By
 
 object SignInPage extends WebPage {
 
@@ -31,6 +32,10 @@ object SignInPage extends WebPage {
 
   def signIn(): Unit = {
     click on signInBtn
+  }
+
+  def isError = {
+    find(className("error-notification")).fold(false)(_.text == "Invalid user ID or password. Try again.")
   }
 
   def signIn(username: String, password: String) = {

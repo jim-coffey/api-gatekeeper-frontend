@@ -21,5 +21,11 @@ import acceptance.WebPage
 object DashboardPage extends WebPage {
 
   override val url: String = "http://localhost:9000/api-gatekeeper/dashboard"
-  override def isCurrentPage: Boolean = find(cssSelector("h1")).fold(false)(_.text == "Application names")
+  override def isCurrentPage: Boolean = {
+    currentUrl == url
+  }
+
+  def isUnauthorised() = {
+    find(cssSelector("h2")).fold(false)(_.text == "Only Authorised users can access the requested page")
+  }
 }
