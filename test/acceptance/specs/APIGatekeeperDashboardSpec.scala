@@ -16,47 +16,16 @@
 
 package acceptance.specs
 
+import java.net.URLEncoder
+
 import acceptance.{SignInSugar, BaseSpec}
-import acceptance.pages.{DashboardPage, SignInPage}
+import acceptance.pages.{ReviewPage, DashboardPage, SignInPage}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import component.matchers.CustomMatchers
 import org.openqa.selenium.By
 import org.scalatest.Matchers
 
-class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers with CustomMatchers {
-
-  val appPendingApprovalId1 = "df0c32b6-bbb7-46eb-ba50-e6e5459162ff"
-  val appPendingApprovalId2 = "a4b47c82-5888-41fd-aa83-da2bbd4679d1"
-
-  val applications =
-    s"""
-      |[
-      |  {
-      |    "id": "${appPendingApprovalId2}",
-      |    "name": "Second Application",
-      |    "submittedOn": 1458832690624,
-      |    "state": "PENDING_GATEKEEPER_APPROVAL"
-      |  },
-      |  {
-      |    "id": "${appPendingApprovalId1}",
-      |    "name": "First Application",
-      |    "submittedOn": 1458659208000,
-      |    "state": "PENDING_GATEKEEPER_APPROVAL"
-      |  },
-      |  {
-      |    "id": "9688ad02-230e-42b7-8f9a-be593565bfdc",
-      |    "name": "Third",
-      |    "submittedOn": 1458831410657,
-      |    "state": "PENDING_REQUESTER_VERIFICATION"
-      |  },
-      |  {
-      |    "id": "56148b28-65b0-47dd-a3ce-2f02840ddd31",
-      |    "name": "Fourth",
-      |    "submittedOn": 1458832728156,
-      |    "state": "PRODUCTION"
-      |  }
-      |]
-    """.stripMargin
+class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers with CustomMatchers with MockDataSugar{
 
   feature("View applications pending gatekeeper approval on the dashboard") {
 
@@ -77,13 +46,35 @@ class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers
       assertPendingApplication(appPendingApprovalId2, "Second Application submitted: 24.03.2016 Review")
     }
 
-    scenario("There are no pending applications.") {
+    scenario("I see the message There are no pending applications when there are no applications awaiting uplift approval") {
       stubFor(get(urlEqualTo("/gatekeeper/applications"))
         .willReturn(aResponse().withBody("[]").withStatus(200)))
 
       signInGatekeeper
       on(DashboardPage)
       assertNoPendingApplications()
+    }
+
+
+    scenario("I can click on the Review button to be taken to the review page for an application awaiting uplift approval") {
+      stubFor(get(urlEqualTo("/gatekeeper/applications"))
+          .willReturn(aResponse().withBody(applications).withStatus(200)))
+
+      stubFor(get(urlEqualTo(s"/gatekeeper/application/$appPendingApprovalId1"))
+          .willReturn(aResponse().withBody(application).withStatus(200)))
+
+      val encodedEmail=URLEncoder.encode(adminEmail, "UTF-8")
+
+      stubFor(get(urlEqualTo(s"/developer?email=$encodedEmail"))
+          .willReturn(aResponse().withBody(administrator).withStatus(200)))
+
+      signInGatekeeper
+      on(DashboardPage)
+      clickOnLink(s"data-review-$appPendingApprovalId1")
+      on(ReviewPage(appPendingApprovalId1, "First Application"))
+      verifyText("data-description", applicationDescription)
+      verifyText("data-submitter-name", fullName)
+      verifyText("data-submitter-email", adminEmail)
     }
   }
 

@@ -1,4 +1,4 @@
-@()(implicit request: Request[_], userFullName: Option[String])
+@(application: ApplicationDetails)(implicit request: Request[_], userFullName: Option[String])
 
 
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
@@ -13,16 +13,18 @@
     </nav>
 
     <header>
-        <h1 class="flush--top">Application name here</h1>
+        <h1 class="flush--top">@{application.name}</h1>
     </header>
 
-    <h2 class="heading--font-reset">Description:</h2>
-    <p class="flush--top">Supporting Barclays’ customers in becoming more tax efficient.</p>
+    <h2>Description:</h2>
+    <p class="flush--top" data-description>@{application.description}</p>
 
-    <h2 class="heading--font-reset">Submitter:</h2>
-    <p class="flush--top">francis.jackson@@barclays-digital.com</p>
+    <h2>Submitter:</h2>
+    <p class="flush--top" data-submitter-name>@{application.submission.name}</p>
+    <p class="flush--top" data-submitter-email>@{application.submission.email}</p>
 
-    <form action="">
+    @helper.form(action = controllers.routes.DashboardController.handleUplift(application.id), 'class -> "form") {
+        @helper.CSRF.formField
 
         <fieldset class="form-field-group js-toggle"
                   data-target="rejection-reason"
@@ -32,10 +34,10 @@
                   aria-hidden="true">
             <legend class="visuallyhidden">Choose approve or reject application</legend>
             <label class="block-label--stacked">
-                <input type="radio" id="approve-app" name="review" value="APPROVE" checked="">Approve
+                <input type="radio" id="approve-app" name="action" value="APPROVE" checked="">Approve
             </label>
             <label class="block-label--stacked">
-                <input type="radio" id="reject-app" name="review" value="REJECT">Reject
+                <input type="radio" id="reject-app" name="action" value="REJECT">Reject
             </label>
         </fieldset>
 
@@ -49,11 +51,10 @@
         </div>
 
         <div class="form-field">
-            <input type="submit" class="button" role="button" value="Submit"/>
+            <input id="submit" type="submit" class="button" role="button" value="Submit"/>
             <a href="dashboard" class="button button--link">Cancel</a>
         </div>
-
-    </form>
+    }
 
 </div>
 }

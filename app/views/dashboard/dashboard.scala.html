@@ -19,17 +19,11 @@
                         @for(application <- applications("pendingApproval")) {
                             <li data-pending-@{application.id} class="app-info">
                                 <div class="app-info__primary">
-                                    <h3 class="app-info__heading">@{
-                                        application.name
-                                    }</h3>
-                                    <p class="app-info__info">submitted: @{
-                                        dateFormatter.print(application.submittedOn)
-                                    }</p>
+                                    <h3 class="app-info__heading">@{application.name}</h3>
+                                    <p class="app-info__info">submitted: @{dateFormatter.print(application.submittedOn)}</p>
                                 </div>
                                 <div class="app-info__secondary">
-                                    <a class="app-info__link" href="@{
-                                        routes.DashboardController.reviewPage
-                                    }">Review</a>
+                                    <a data-review-@application.id.toString href="@{routes.DashboardController.reviewPage(application.id.toString)}">Review</a>
                                 </div>
                             </li>
                         }
@@ -46,7 +40,7 @@
                         <li class="app-info">
                             <div class="app-info__primary">
                                 <h3 class="app-info__heading">
-                                    <a class="app-info__link" href="approved">@{application.name}</a>
+                                    <a href="approved">@{application.name}</a>
                                 </h3>
                                 <p class="app-info__info">@{dateFormatter.print(application.submittedOn)}</p>
                             </div>

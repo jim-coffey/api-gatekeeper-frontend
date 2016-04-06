@@ -21,10 +21,12 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.openqa.selenium.WebDriver
 
 trait SignInSugar extends NavigationSugar {
+  val gatekeeperId: String = "joe.blogs"
 
   def signInGatekeeper()(implicit webDriver: WebDriver) = {
+
     val authBody =
-      """
+      s"""
         |{
         | "access_token": {
         |     "authToken":"Bearer fggjmiJzyVZrR6/e39TimjqHyla3x8kmlTd",
@@ -32,7 +34,7 @@ trait SignInSugar extends NavigationSugar {
         |     },
         |     "expires_in":14400,
         |     "roles":[{"scope":"api","name":"gatekeeper"}],
-        |     "authority_uri":"/auth/oid/joe.blogs",
+        |     "authority_uri":"/auth/oid/$gatekeeperId",
         |     "token_type":"Bearer"
         |}
       """.stripMargin
@@ -45,7 +47,7 @@ trait SignInSugar extends NavigationSugar {
 
     goOn(SignInPage)
 
-    SignInPage.signIn("joe.blogs", "password")
+    SignInPage.signIn(gatekeeperId, "password")
   }
 
 }

@@ -16,9 +16,9 @@
 
 package unit.controllers
 
-import connectors.{ApplicationConnector, AuthConnector}
+import connectors.{DeveloperConnector, ApplicationConnector, AuthConnector}
 import connectors.AuthConnector.InvalidCredentials
-import controllers.DashboardController
+import controllers.{HandleUpliftForm, DashboardController}
 import model.LoginDetails.{JsonStringDecryption, JsonStringEncryption}
 import model._
 import org.joda.time.DateTime
@@ -46,6 +46,7 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
         val authConnector = mock[AuthConnector]
         val authProvider = mock[AuthenticationProvider]
         val applicationConnector = mock[ApplicationConnector]
+        val developerConnector = mock[DeveloperConnector]
       }
 
       implicit val encryptedStringFormats = JsonStringEncryption
@@ -103,11 +104,11 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
     }
 
-    "approveUplift" should {
+    "handleUplift" should {
       val applicationId = "applicationId"
       val userName = "userName"
 
-      "call backend with correct application id and gatekeeper id" in new Setup {
+      "call backend with correct application id and gatekeeper id when application is approved" in new Setup {
         val loginDetails = LoginDetails("userName", Protected("password"))
         val successfulAuthentication = SuccessfulAuthentication(BearerToken("bearer-token", DateTime.now().plusMinutes(10)), userName, None)
 
@@ -119,7 +120,9 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
         given(underTest.applicationConnector.approveUplift(appIdCaptor.capture(), gatekeeperIdCaptor.capture())(any[HeaderCarrier])).willReturn(Future.successful(ApproveUpliftSuccessful))
 
-        val result = await(underTest.approveUplift(applicationId)(aLoggedInRequest))
+        val result = await(underTest.handleUplift(applicationId)(aLoggedInRequest.withFormUrlEncodedBody(
+          ("action", "APPROVE")
+        )))
 
         appIdCaptor.getValue shouldBe applicationId
         gatekeeperIdCaptor.getValue shouldBe userName
