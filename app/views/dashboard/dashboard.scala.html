@@ -1,7 +1,7 @@
-@import model.ApplicationWithUpliftRequest
 @import model.State._
 @import org.joda.time.format.DateTimeFormat
-@(applications: Map[String, Seq[ApplicationWithUpliftRequest]])(implicit request: Request[_], userFullName: Option[String])
+@import model.CategorisedApplications
+@(applications: CategorisedApplications)(implicit request: Request[_], userFullName: Option[String])
 
 @main(title = "API Gatekeeper Dashboard", userFullName = userFullName) {
 
@@ -14,9 +14,9 @@
                 <section class="section--branded two-col-list__col two-col-list__col--left">
 
                     <h2>Pending</h2>
-                    @if(applications("pendingApproval").nonEmpty) {
+                    @if(applications.pendingApproval.nonEmpty) {
                         <ul>
-                        @for(application <- applications("pendingApproval")) {
+                        @for(application <- applications.pendingApproval) {
                             <li data-pending-@{application.id} class="app-info">
                                 <div class="app-info__primary">
                                     <h3 class="app-info__heading">@{application.name}</h3>
@@ -35,9 +35,9 @@
 
                 <section class="section--branded two-col-list__col two-col-list__col--right">
                     <h2>Approved</h2>
-                    @if(applications("pendingVerification").nonEmpty) {
+                    @if(applications.approved.nonEmpty) {
                         <ul>
-                        @for(application <- applications("pendingVerification")) {
+                        @for(application <- applications.approved) {
                             <li data-approved-@application.id.toString class="app-info">
                                 <div class="app-info__primary">
                                     <h3 class="app-info__heading">

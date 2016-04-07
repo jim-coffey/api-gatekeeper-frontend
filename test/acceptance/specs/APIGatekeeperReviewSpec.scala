@@ -38,7 +38,7 @@ class APIGatekeeperReviewSpec  extends BaseSpec with SignInSugar with Matchers w
     scenario("I see the review page and I am able to approve the uplift request") {
 
       stubFor(get(urlEqualTo("/gatekeeper/applications"))
-        .willReturn(aResponse().withBody(applicationsPendinApproval).withStatus(200)))
+        .willReturn(aResponse().withBody(applicationsPendingApproval).withStatus(200)))
 
       stubFor(get(urlEqualTo(s"/gatekeeper/application/$appPendingApprovalId1"))
         .willReturn(aResponse().withBody(application).withStatus(200)))
@@ -63,7 +63,7 @@ class APIGatekeeperReviewSpec  extends BaseSpec with SignInSugar with Matchers w
     scenario("I see the dashboard page when the request to uplift the application fails with a 412") {
 
       stubFor(get(urlEqualTo("/gatekeeper/applications"))
-        .willReturn(aResponse().withBody(applicationsPendinApproval).withStatus(200)))
+        .willReturn(aResponse().withBody(applicationsPendingApproval).withStatus(200)))
 
       stubFor(get(urlEqualTo(s"/gatekeeper/application/$appPendingApprovalId1"))
         .willReturn(aResponse().withBody(application).withStatus(200)))

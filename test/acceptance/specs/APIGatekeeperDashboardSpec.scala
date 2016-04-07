@@ -19,7 +19,7 @@ package acceptance.specs
 import java.net.URLEncoder
 
 import acceptance.{SignInSugar, BaseSpec}
-import acceptance.pages.{ReviewPage, DashboardPage, SignInPage}
+import acceptance.pages.{ReviewPage, DashboardPage}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import component.matchers.CustomMatchers
 import org.openqa.selenium.By
@@ -36,7 +36,7 @@ class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers
     scenario("I see a list of pending applications in ascending order by submitted date") {
 
       stubFor(get(urlEqualTo("/gatekeeper/applications"))
-        .willReturn(aResponse().withBody(applicationsPendinApproval).withStatus(200)))
+        .willReturn(aResponse().withBody(applicationsPendingApproval).withStatus(200)))
 
       signInGatekeeper
       on(DashboardPage)
@@ -58,7 +58,7 @@ class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers
 
     scenario("I can click on the Review button to be taken to the review page for an application awaiting uplift approval") {
       stubFor(get(urlEqualTo("/gatekeeper/applications"))
-          .willReturn(aResponse().withBody(applicationsPendinApproval).withStatus(200)))
+          .willReturn(aResponse().withBody(applicationsPendingApproval).withStatus(200)))
 
       stubFor(get(urlEqualTo(s"/gatekeeper/application/$appPendingApprovalId1"))
           .willReturn(aResponse().withBody(application).withStatus(200)))
@@ -84,7 +84,7 @@ class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers
       info("As a gatekeeper")
       info("I see a list of applications which have already been approved")
 
-      scenario("I see a list of pending applications in alphabetical order and their status") {
+      scenario("I see a list of approved applications in alphabetical order and their status") {
         stubFor(get(urlEqualTo("/gatekeeper/applications"))
           .willReturn(aResponse().withBody(approvedApplications).withStatus(200)))
 

@@ -20,6 +20,7 @@ import connectors.{DeveloperConnector, ApplicationConnector, AuthConnector}
 import model.State.{State, _}
 import model.UpliftAction.{UpliftAction, _}
 import model._
+import org.joda.time.DateTime
 import play.api.Logger
 import play.api.data.Form
 import play.api.mvc.{Action, AnyContent}
@@ -42,19 +43,19 @@ object DashboardController extends DashboardController {
 
 trait DashboardController extends FrontendController with GatekeeperAuthWrapper {
 
+  implicit def dateTimeOrdering: Ordering[DateTime] = Ordering.fromLessThan(_ isBefore _)
   val applicationConnector: ApplicationConnector
   val developerConnector: DeveloperConnector
 
   def dashboardPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
 
-      def applicationsForDashboard(apps: Seq[ApplicationWithUpliftRequest]): Map[String, Seq[ApplicationWithUpliftRequest]] = {
+      def applicationsForDashboard(apps: Seq[ApplicationWithUpliftRequest]) = {
         val grouped: Map[State, Seq[ApplicationWithUpliftRequest]] = apps.groupBy(_.state)
         val pendingApproval = grouped.getOrElse(PENDING_GATEKEEPER_APPROVAL, Seq())
         val pendingVerification = grouped.getOrElse(PENDING_REQUESTER_VERIFICATION, Seq()) ++ grouped.getOrElse(PRODUCTION, Seq())
 
-        Map("pendingApproval" -> pendingApproval.sortWith(ApplicationWithUpliftRequest.compareBySubmittedOn),
-            "pendingVerification" -> pendingVerification.sortBy(_.name))
+        CategorisedApplications(pendingApproval.sortBy(_.submittedOn), pendingVerification.sortBy(_.name))
       }
 
       for {

@@ -45,7 +45,7 @@ trait MockDataSugar {
   val lastName = "Smith"
   val fullName = s"$firstName $lastName"
 
-  val applicationsPendinApproval =
+  val applicationsPendingApproval =
     s"""
        |[
        |  {
