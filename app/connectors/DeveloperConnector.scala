@@ -35,6 +35,6 @@ trait DeveloperConnector {
   }
 
   def fetchByEmails(emails: Seq[String])(implicit hc: HeaderCarrier) = {
-    http.GET[Seq[UserResponse]](s"$developerBaseUrl/developers/emails=${emails.mkString(",")}")
+    http.GET[Seq[UserResponse]](s"$developerBaseUrl/developers?emails=${emails.mkString(",")}")
   }
 }
