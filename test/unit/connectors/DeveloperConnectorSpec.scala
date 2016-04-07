@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package unit.connectors
 
 import java.net.URLEncoder
@@ -55,7 +71,8 @@ class DeveloperConnectorSpec extends UnitSpec with Matchers with ScalaFutures wi
     }
 
     "fetch all developers by emails" in new Setup {
-      stubFor(get(urlEqualTo(s"/developers?emails=$developer1Email,$developer2Email")).willReturn(
+      val encodedEmailsParam = encode(s"$developer1Email,$developer2Email")
+      stubFor(get(urlEqualTo(s"/developers?emails=$encodedEmailsParam")).willReturn(
         aResponse().withStatus(200).withBody(
           Json.toJson(Seq(aUserResponse(developer1Email),aUserResponse(developer2Email))).toString()))
       )

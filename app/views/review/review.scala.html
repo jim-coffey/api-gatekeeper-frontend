@@ -1,6 +1,6 @@
+@import model.ApplicationDetails
+
 @(application: ApplicationDetails)(implicit request: Request[_], userFullName: Option[String])
-
-
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
 <div class="content__body">
 
@@ -20,8 +20,8 @@
     <p class="flush--top" data-description>@{application.description}</p>
 
     <h2>Submitter:</h2>
-    <p class="flush--top" data-submitter-name>@{application.submission.name}</p>
-    <p class="flush--top" data-submitter-email>@{application.submission.email}</p>
+    <p class="flush--top" data-submitter-name>@{application.submission.submitterName}</p>
+    <p class="flush--top" data-submitter-email>@{application.submission.submitterEmail}</p>
 
     @helper.form(action = controllers.routes.DashboardController.handleUplift(application.id), 'class -> "form") {
         @helper.CSRF.formField

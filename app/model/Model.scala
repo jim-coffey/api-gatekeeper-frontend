@@ -26,6 +26,7 @@ import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Protected}
 import uk.gov.hmrc.time.DateTimeUtils
 
+
 case class LoginDetails(userName: String, password: Protected[String])
 
 object LoginDetails {
@@ -140,6 +141,7 @@ object ApplicationWithUpliftRequest {
 }
 
 class ApproveUpliftPreconditionFailed extends Throwable
+
 class FetchApplicationsFailed extends Throwable
 
 class InconsistentDataState(message: String) extends RuntimeException(message)
@@ -151,6 +153,7 @@ object ApproveUpliftRequest {
 }
 
 sealed trait ApproveUpliftSuccessful
+
 case object ApproveUpliftSuccessful extends ApproveUpliftSuccessful
 
 object UpliftAction extends Enumeration {
@@ -161,3 +164,18 @@ object UpliftAction extends Enumeration {
 
   implicit val format = EnumJson.enumFormat(UpliftAction)
 }
+
+case class SubmissionDetails(submitterName: String, submitterEmail: String, dateSubmitted: DateTime)
+
+case class ApprovalDetails(submittedOn: DateTime, approvedBy: String, approvedOn: DateTime)
+
+object SubmissionDetails {
+  implicit val format = Json.format[SubmissionDetails]
+}
+
+case class Admin(name: String, email: String)
+
+case class ApplicationDetails(id: String, name: String, description: String, submission: SubmissionDetails)
+
+case class ApprovedApplication(details: ApplicationDetails, admins: Seq[Admin], approvedBy: String, approvedOn: DateTime)
+
