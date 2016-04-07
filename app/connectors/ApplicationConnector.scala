@@ -36,11 +36,21 @@ trait ApplicationConnector {
   val http: HttpPost with HttpGet
 
   def approveUplift(applicationId: String, gatekeeperUserId: String)(implicit hc: HeaderCarrier): Future[ApproveUpliftSuccessful] =
-    http.POST(s"$applicationBaseUrl/application/$applicationId/approve-uplift", ApproveUpliftRequest(gatekeeperUserId), Seq("Content-Type" -> "application/json"))
+    http.POST(s"$applicationBaseUrl/application/$applicationId/approve-uplift",
+      ApproveUpliftRequest(gatekeeperUserId), Seq("Content-Type" -> "application/json"))
       .map(_ => ApproveUpliftSuccessful)
       .recover {
-        case e: Upstream4xxResponse if (e.upstreamResponseCode == 412) => throw new ApproveUpliftPreconditionFailed
+        case e: Upstream4xxResponse if (e.upstreamResponseCode == 412) => throw new PreconditionFailed
       }
+
+  def rejectUplift(applicationId: String, gatekeeperUserId: String, rejectionReason: String)(implicit hc: HeaderCarrier) : Future[RejectUpliftSuccessful] =
+    http.POST(s"$applicationBaseUrl/application/$applicationId/reject-uplift",
+      RejectUpliftRequest(gatekeeperUserId, rejectionReason), Seq("Content-Type" -> "application/json"))
+      .map(_ => RejectUpliftSuccessful)
+      .recover {
+        case e: Upstream4xxResponse if (e.upstreamResponseCode == 412) => throw new PreconditionFailed
+      }
+
 
   def fetchApplications()(implicit hc: HeaderCarrier): Future[Seq[ApplicationWithUpliftRequest]] = {
     http.GET[Seq[ApplicationWithUpliftRequest]](s"$applicationBaseUrl/gatekeeper/applications")

@@ -19,7 +19,7 @@ package unit.connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import config.WSHttp
 import connectors.ApplicationConnector
-import model.{FetchApplicationsFailed, ApproveUpliftPreconditionFailed, ApproveUpliftSuccessful}
+import model.{FetchApplicationsFailed, PreconditionFailed, ApproveUpliftSuccessful}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterEach, Matchers}
 import uk.gov.hmrc.play.http.HeaderCarrier
@@ -45,7 +45,7 @@ class ApplicationConnectorSpec extends UnitSpec with Matchers with ScalaFutures 
       val result = await(connector.approveUplift(applicationId, gatekeeperId))
       verify(1, postRequestedFor(urlPathEqualTo(s"/application/$applicationId/approve-uplift"))
         .withHeader("Authorization", equalTo(authToken))
-        .withRequestBody(equalTo( """{"gatekeeperUserId":"loggedin.gatekeeper"}""")))
+        .withRequestBody(equalTo( s"""{"gatekeeperUserId":"$gatekeeperId"}""")))
 
       result shouldBe ApproveUpliftSuccessful
     }
@@ -56,11 +56,42 @@ class ApplicationConnectorSpec extends UnitSpec with Matchers with ScalaFutures 
       stubFor(post(urlEqualTo(s"/application/$applicationId/approve-uplift")).willReturn(aResponse().withStatus(412)
         .withBody( """{"code"="INVALID_STATE_TRANSITION","message":"Application is not in state 'PENDING_GATEKEEPER_APPROVAL'"}""")))
 
-      intercept[ApproveUpliftPreconditionFailed](await(connector.approveUplift(applicationId, gatekeeperId)))
+      intercept[PreconditionFailed](await(connector.approveUplift(applicationId, gatekeeperId)))
 
       verify(1, postRequestedFor(urlPathEqualTo(s"/application/$applicationId/approve-uplift"))
         .withHeader("Authorization", equalTo(authToken))
-        .withRequestBody(equalTo( """{"gatekeeperUserId":"loggedin.gatekeeper"}""")))
+        .withRequestBody(equalTo( s"""{"gatekeeperUserId":"$gatekeeperId"}""")))
+    }
+  }
+
+  "rejectUplift" should {
+    "send Authorisation and return Ok if the uplift rejection was successful on the backend" in new Setup {
+      val applicationId = "anApplicationId"
+      val gatekeeperId = "loggedin.gatekeeper"
+      val rejectionReason = "A similar name is already taken by another application"
+      stubFor(post(urlEqualTo(s"/application/$applicationId/reject-uplift")).willReturn(aResponse().withStatus(204)))
+
+      val result = await(connector.rejectUplift(applicationId, gatekeeperId, rejectionReason))
+
+      verify(1, postRequestedFor(urlPathEqualTo(s"/application/$applicationId/reject-uplift"))
+        .withHeader("Authorization", equalTo(authToken))
+        .withRequestBody(equalTo(
+          s"""{"gatekeeperUserId":"$gatekeeperId","reason":"$rejectionReason"}""")))
+      }
+
+    "hande 412 preconditions failed" in new Setup {
+      val applicationId = "anApplicationId"
+      val gatekeeperId = "loggedin.gatekeeper"
+      val rejectionReason = "A similar name is already taken by another application"
+      stubFor(post(urlEqualTo(s"/application/$applicationId/reject-uplift")).willReturn(aResponse().withStatus(412)
+        .withBody( """{"code"="INVALID_STATE_TRANSITION","message":"Application is not in state 'PENDING_GATEKEEPER_APPROVAL'"}""")))
+
+      intercept[PreconditionFailed](await(connector.rejectUplift(applicationId, gatekeeperId, rejectionReason)))
+
+      verify(1, postRequestedFor(urlPathEqualTo(s"/application/$applicationId/reject-uplift"))
+        .withHeader("Authorization", equalTo(authToken))
+        .withRequestBody(equalTo(
+          s"""{"gatekeeperUserId":"$gatekeeperId","reason":"$rejectionReason"}""")))
     }
   }
 

@@ -1,6 +1,6 @@
 @import model.ApplicationDetails
 
-@(application: ApplicationDetails)(implicit request: Request[_], userFullName: Option[String])
+@(form: Form[controllers.HandleUpliftForm], application: ApplicationDetails)(implicit request: Request[_], userFullName: Option[String])
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
 <div class="content__body">
 
@@ -34,10 +34,10 @@
                   aria-hidden="true">
             <legend class="visuallyhidden">Choose approve or reject application</legend>
             <label class="block-label--stacked">
-                <input type="radio" id="approve-app" name="action" value="APPROVE" checked="">Approve
+                <input type="radio" id="approve-app" name="action" value="APPROVE" @if(form.data.get("action").getOrElse("APPROVE") == "APPROVE"){ checked }>Approve
             </label>
             <label class="block-label--stacked">
-                <input type="radio" id="reject-app" name="action" value="REJECT">Reject
+                <input type="radio" id="reject-app" name="action" value="REJECT" @if(form.data.get("action").getOrElse("") == "REJECT"){ checked }>Reject
             </label>
         </fieldset>
 
@@ -47,7 +47,7 @@
              aria-visible="false">
             <label for="rejection-text"><strong>Enter reason for rejection:</strong></label>
             <p class="form-hint flush--top">Insert applicable guideline from <a href="#">naming guidelines</a>.</p>
-            <textarea id="rejection-text" class="textarea--3-4 flush--top"></textarea>
+            <textarea id="rejection-text" name="reason" class="textarea--3-4 flush--top">@form.data.get("reason")</textarea>
         </div>
 
         <div class="form-field">
