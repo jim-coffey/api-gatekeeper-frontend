@@ -41,8 +41,10 @@ trait BaseSpec extends FeatureSpec with BeforeAndAfterAll with BeforeAndAfterEac
         "microservice.services.auth.host" -> stubHost,
         "microservice.services.auth.port" -> stubPort,
         "microservice.services.third-party-application.host" -> stubHost,
-        "microservice.services.third-party-application.port" -> stubPort
-    ))
+        "microservice.services.third-party-application.port" -> stubPort,
+        "microservice.services.third-party-developer.host" -> stubHost,
+        "microservice.services.third-party-developer.port" -> stubPort
+      ))
 
   var wireMockServer = new WireMockServer(wireMockConfig().port(stubPort))
 

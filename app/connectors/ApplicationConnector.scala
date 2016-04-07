@@ -18,8 +18,7 @@ package connectors
 
 import config.WSHttp
 import connectors.AuthConnector._
-import model.{FetchApplicationsFailed, ApplicationWithUpliftRequest, ApproveUpliftPreconditionFailed, ApproveUpliftSuccessful}
-import play.api.libs.json.Json
+import model._
 import uk.gov.hmrc.play.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,12 +35,6 @@ trait ApplicationConnector {
 
   val http: HttpPost with HttpGet
 
-  case class ApproveUpliftRequest(gatekeeperUserId: String)
-
-  object ApproveUpliftRequest {
-    implicit val format = Json.format[ApproveUpliftRequest]
-  }
-
   def approveUplift(applicationId: String, gatekeeperUserId: String)(implicit hc: HeaderCarrier): Future[ApproveUpliftSuccessful] =
     http.POST(s"$applicationBaseUrl/application/$applicationId/approve-uplift", ApproveUpliftRequest(gatekeeperUserId), Seq("Content-Type" -> "application/json"))
       .map(_ => ApproveUpliftSuccessful)
@@ -54,5 +47,9 @@ trait ApplicationConnector {
       .recover {
         case e: Upstream5xxResponse => throw new FetchApplicationsFailed
       }
+  }
+
+  def fetchApplication(applicationId: String)(implicit hc: HeaderCarrier): Future[ApplicationWithHistory] = {
+    http.GET[ApplicationWithHistory](s"$applicationBaseUrl/gatekeeper/application/$applicationId")
   }
 }

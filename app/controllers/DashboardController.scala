@@ -16,16 +16,18 @@
 
 package controllers
 
-import connectors.{ApplicationConnector, AuthConnector}
+import connectors.{DeveloperConnector, ApplicationConnector, AuthConnector}
 import model.State.{State, _}
-import model.{ApplicationWithUpliftRequest, Role}
+import model.UpliftAction.{UpliftAction, _}
+import model._
+import play.api.Logger
+import play.api.data.Form
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import utils.{GatekeeperAuthProvider, GatekeeperAuthWrapper}
 import views.html.approvedApplication._
 import views.html.dashboard._
-
-import views.html.review.review
+import views.html.review._
 
 import scala.concurrent.Future
 
@@ -35,13 +37,15 @@ object DashboardController extends DashboardController {
   override def authConnector = AuthConnector
 
   override val applicationConnector = ApplicationConnector
+  override val developerConnector: DeveloperConnector = DeveloperConnector
 }
 
 trait DashboardController extends FrontendController with GatekeeperAuthWrapper {
 
   val applicationConnector: ApplicationConnector
+  val developerConnector: DeveloperConnector
 
-  val dashboardPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
+  def dashboardPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
 
       def applicationsForDashboard(apps: Seq[ApplicationWithUpliftRequest]): Map[String, Seq[ApplicationWithUpliftRequest]] = {
@@ -59,21 +63,57 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
       } yield Ok(dashboard(mappedApps))
   }
 
-  val reviewPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
+  def reviewPage(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
-      Future.successful(Ok(review()))
+
+      def lastSubmission(app: ApplicationWithHistory): Future[SubmissionDetails] = {
+        val submission: StateHistory = app.history.filter(_.state == State.PENDING_GATEKEEPER_APPROVAL)
+          .sortWith(StateHistory.ascendingDateForAppId)
+          .lastOption.getOrElse(throw new InconsistentDataState("pending gatekeeper approval state history item not found"))
+
+        developerConnector.fetchByEmail(submission.actor.id).map(s =>
+          SubmissionDetails(s"${s.firstName} ${s.lastName}", s.email, submission.changedAt)
+        )
+      }
+
+      def applicationDetails(app: ApplicationResponse, submission: SubmissionDetails) = {
+        ApplicationDetails(app.id.toString, app.name, app.description.getOrElse(""), submission)
+      }
+
+      for {
+        app <- applicationConnector.fetchApplication(appId)
+        submission <- lastSubmission(app)
+        details = applicationDetails(app.application, submission)
+      } yield Ok(review(details))
   }
 
-  val approvedApplicationPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
+  def approvedApplicationPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
       Future.successful(Ok(approved()))
   }
 
-  def approveUplift(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
+  def handleUplift(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
-      applicationConnector.approveUplift(appId, loggedIn.get) map {
-        ApproveUpliftSuccessful => Redirect(controllers.routes.DashboardController.dashboardPage)
-      }
-  }
+      val requestForm = HandleUpliftForm.form.bindFromRequest
 
+      def errors(errors: Form[HandleUpliftForm]) =
+        Future.successful(Redirect(controllers.routes.DashboardController.dashboardPage))
+
+      def addApplicationWithValidForm(validForm: HandleUpliftForm) = {
+        UpliftAction.from(validForm.action) match {
+          case Some(APPROVE) =>
+            applicationConnector.approveUplift(appId, loggedIn.get) map (
+              ApproveUpliftSuccessful => Redirect(controllers.routes.DashboardController.dashboardPage)) recover {
+              case e:ApproveUpliftPreconditionFailed => {
+                Logger.warn("Request to uplift application failed as application might have already been uplifted.", e)
+                Redirect(controllers.routes.DashboardController.dashboardPage)
+              }
+            }
+          case Some(REJECT) =>
+            Future.successful(Redirect(controllers.routes.DashboardController.dashboardPage))
+        }
+      }
+
+      requestForm.fold(errors, addApplicationWithValidForm)
+  }
 }

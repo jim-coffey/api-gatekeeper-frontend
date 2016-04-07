@@ -18,12 +18,14 @@ package model
 
 import java.util.UUID
 
+import model.CollaboratorRole.CollaboratorRole
+import model.State.State
 import org.joda.time.DateTime
 import play.api.libs.json.Json
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Protected}
+import uk.gov.hmrc.time.DateTimeUtils
 
-import model.State.State
 
 case class LoginDetails(userName: String, password: Protected[String])
 
@@ -73,23 +75,107 @@ object State extends Enumeration {
   implicit val format = EnumJson.enumFormat(State)
 }
 
+object CollaboratorRole extends Enumeration {
+  type CollaboratorRole = Value
+  val DEVELOPER, ADMINISTRATOR = Value
+
+  implicit val format = EnumJson.enumFormat(CollaboratorRole)
+}
+
+object Collaborator {
+  implicit val format = Json.format[Collaborator]
+}
+
+case class Collaborator(emailAddress: String, role: CollaboratorRole)
+
+case class ApplicationState(name: State = State.TESTING, requestedByEmailAddress: Option[String] = None, verificationCode: Option[String] = None, updatedOn: DateTime = DateTimeUtils.now)
+
+case class ApplicationResponse(id: UUID,
+                               name: String,
+                               description: Option[String] = None,
+                               collaborators: Set[Collaborator],
+                               createdOn: DateTime,
+                               state: ApplicationState) {
+
+  def admins = collaborators.filter(_.role == CollaboratorRole.ADMINISTRATOR)
+}
+
+object ApplicationResponse {
+  implicit val format1 = Json.format[Collaborator]
+  implicit val format2 = Json.format[ApplicationState]
+  implicit val format3 = EnumJson.enumFormat(State)
+  implicit val format4 = Json.format[ApplicationResponse]
+
+}
+
+case class ApplicationWithHistory(application: ApplicationResponse, history: Seq[StateHistory])
+
+object ApplicationWithHistory {
+  implicit val format = Json.format[ApplicationWithHistory]
+}
+
 case class ApplicationWithUpliftRequest(id: UUID,
                                         name: String,
                                         submittedOn: DateTime,
-                                        state: State)
+                                        state: State) {
+
+  val compareBySubmittedOn = (a: ApplicationWithUpliftRequest, b: ApplicationWithUpliftRequest) => a.submittedOn.isBefore(b.submittedOn)
+}
+
+case class UserResponse(email: String,
+                        firstName: String,
+                        lastName: String,
+                        registrationTime: DateTime,
+                        lastModified: DateTime)
+
+object UserResponse {
+  implicit val format = Json.format[UserResponse]
+}
 
 object ApplicationWithUpliftRequest {
 
-  val compareBySubmittedOn = (a: ApplicationWithUpliftRequest, b: ApplicationWithUpliftRequest) => a.submittedOn.isBefore(b.submittedOn)
-
   implicit val formatState = EnumJson.enumFormat(State)
   implicit val format = Json.format[ApplicationWithUpliftRequest]
+
+  val compareBySubmittedOn = (a: ApplicationWithUpliftRequest, b: ApplicationWithUpliftRequest) => a.submittedOn.isBefore(b.submittedOn)
 }
 
 class ApproveUpliftPreconditionFailed extends Throwable
+
 class FetchApplicationsFailed extends Throwable
 
 class InconsistentDataState(message: String) extends RuntimeException(message)
 
+case class ApproveUpliftRequest(gatekeeperUserId: String)
+
+object ApproveUpliftRequest {
+  implicit val format = Json.format[ApproveUpliftRequest]
+}
+
 sealed trait ApproveUpliftSuccessful
+
 case object ApproveUpliftSuccessful extends ApproveUpliftSuccessful
+
+object UpliftAction extends Enumeration {
+  type UpliftAction = Value
+  val APPROVE, REJECT = Value
+
+  def from(action: String) = UpliftAction.values.find(e => e.toString == action.toUpperCase)
+
+  implicit val format = EnumJson.enumFormat(UpliftAction)
+}
+
+case class SubmissionDetails(submitterName: String, submitterEmail: String, submittedOn: DateTime)
+
+case class ApprovalDetails(submittedOn: DateTime, approvedBy: String, approvedOn: DateTime)
+
+object SubmissionDetails {
+  implicit val format = Json.format[SubmissionDetails]
+}
+
+case class Admin(name: String, email: String)
+
+case class ApplicationDetails(id: String, name: String, description: String, submission: SubmissionDetails)
+
+case class ApprovedApplication(details: ApplicationDetails, admins: Seq[Admin], approvedBy: String, approvedOn: DateTime)
+

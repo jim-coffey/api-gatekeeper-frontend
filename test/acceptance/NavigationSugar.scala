@@ -55,4 +55,16 @@ trait NavigationSugar extends WebBrowser with Eventually with Assertions with Ma
   def anotherTabIsOpened()(implicit webDriver: WebDriver) = {
     webDriver.getWindowHandles.size() shouldBe 2
   }
+
+  def clickOnLink(attributeName: String)(implicit webDriver: WebDriver) = {
+    webDriver.findElement(By.cssSelector(s"[$attributeName]")).click()
+  }
+
+  def clickOnSubmit()(implicit webDriver: WebDriver) = {
+    webDriver.findElement(By.id("submit")).click()
+  }
+
+  def verifyText(attributeName: String, expected: String)(implicit webDriver: WebDriver) = {
+    webDriver.findElement(By.cssSelector(s"[$attributeName]")).getText shouldBe expected
+  }
 }
