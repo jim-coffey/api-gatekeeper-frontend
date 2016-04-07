@@ -165,7 +165,7 @@ object UpliftAction extends Enumeration {
   implicit val format = EnumJson.enumFormat(UpliftAction)
 }
 
-case class SubmissionDetails(submitterName: String, submitterEmail: String, dateSubmitted: DateTime)
+case class SubmissionDetails(submitterName: String, submitterEmail: String, submittedOn: DateTime)
 
 case class ApprovalDetails(submittedOn: DateTime, approvedBy: String, approvedOn: DateTime)
 
