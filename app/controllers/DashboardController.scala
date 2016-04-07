@@ -102,7 +102,6 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
       val requestForm = HandleUpliftForm.form.bindFromRequest
 
       def errors(errors: Form[HandleUpliftForm]) =
-      //Future.successful(Redirect(controllers.routes.DashboardController.dashboardPage))
         fetchApplicationDetails(appId) map (details => Ok(review(errors, details)))
 
       def recovery: PartialFunction[Throwable, play.api.mvc.Result] = {
