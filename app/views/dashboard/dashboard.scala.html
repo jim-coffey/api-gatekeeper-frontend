@@ -35,25 +35,29 @@
 
                 <section class="section--branded two-col-list__col two-col-list__col--right">
                     <h2>Approved</h2>
-                    <ul>
-                    @for(application <- applications("pendingVerification")) {
-                        <li class="app-info">
-                            <div class="app-info__primary">
-                                <h3 class="app-info__heading">
-                                    <a href="approved">@{application.name}</a>
-                                </h3>
-                                <p class="app-info__info">@{dateFormatter.print(application.submittedOn)}</p>
-                            </div>
-                            <div class="app-info__secondary">
-                                @if(application.state == PRODUCTION) {
-                                    <span class="status status--verified">verified</span>
-                                } else {
-                                    <span class="status status--not-verified">not yet verified</span>
-                                }
-                            </div>
-                        </li>
+                    @if(applications("pendingVerification").nonEmpty) {
+                        <ul>
+                        @for(application <- applications("pendingVerification")) {
+                            <li data-approved-@application.id.toString class="app-info">
+                                <div class="app-info__primary">
+                                    <h3 class="app-info__heading">
+                                        <a href="approved">@{application.name}</a>
+                                    </h3>
+                                    <p class="app-info__info">submitted: @{dateFormatter.print(application.submittedOn)}</p>
+                                </div>
+                                <div class="app-info__secondary">
+                                    @if(application.state == PRODUCTION) {
+                                        <span class="status status--verified">verified</span>
+                                    } else {
+                                        <span class="status status--not-verified">not yet verified</span>
+                                    }
+                                </div>
+                            </li>
+                        }
+                        </ul>
+                    } else {
+                        <p data-approved-none>There are no approved applications.</p>
                     }
-                    </ul>
                 </section>
             </div>
         </div>
