@@ -19,7 +19,7 @@ package acceptance.specs
 import java.net.URLEncoder
 
 import acceptance.{SignInSugar, BaseSpec}
-import acceptance.pages.{ReviewPage, DashboardPage, SignInPage}
+import acceptance.pages.{ReviewPage, DashboardPage}
 import com.github.tomakehurst.wiremock.client.WireMock._
 import component.matchers.CustomMatchers
 import org.openqa.selenium.By
@@ -36,7 +36,7 @@ class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers
     scenario("I see a list of pending applications in ascending order by submitted date") {
 
       stubFor(get(urlEqualTo("/gatekeeper/applications"))
-        .willReturn(aResponse().withBody(applications).withStatus(200)))
+        .willReturn(aResponse().withBody(applicationsPendingApproval).withStatus(200)))
 
       signInGatekeeper
       on(DashboardPage)
@@ -58,7 +58,7 @@ class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers
 
     scenario("I can click on the Review button to be taken to the review page for an application awaiting uplift approval") {
       stubFor(get(urlEqualTo("/gatekeeper/applications"))
-          .willReturn(aResponse().withBody(applications).withStatus(200)))
+          .willReturn(aResponse().withBody(applicationsPendingApproval).withStatus(200)))
 
       stubFor(get(urlEqualTo(s"/gatekeeper/application/$appPendingApprovalId1"))
           .willReturn(aResponse().withBody(application).withStatus(200)))
@@ -78,11 +78,49 @@ class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers
     }
   }
 
+  feature("View approved applications on the dashboard") {
+
+      info("In order to see the state of previously approved applications")
+      info("As a gatekeeper")
+      info("I see a list of applications which have already been approved")
+
+      scenario("I see a list of approved applications in alphabetical order and their status") {
+        stubFor(get(urlEqualTo("/gatekeeper/applications"))
+          .willReturn(aResponse().withBody(approvedApplications).withStatus(200)))
+
+        signInGatekeeper
+        on(DashboardPage)
+
+        DashboardPage.bodyText should containInOrder(List("Application", "BApplication", "RApplication", "ZApplication"))
+        assertApprovedApplication(approvedApp1, "Application submitted: 24.03.2016 not yet verified")
+        assertApprovedApplication(approvedApp4, "BApplication submitted: 24.03.2016 verified")
+        assertApprovedApplication(approvedApp3, "RApplication submitted: 24.03.2016 not yet verified")
+        assertApprovedApplication(approvedApp2, "ZApplication submitted: 22.03.2016 verified")
+      }
+
+      scenario("I see the message There are no approved applications when there no applications have been approved") {
+        stubFor(get(urlEqualTo("/gatekeeper/applications"))
+          .willReturn(aResponse().withBody("[]").withStatus(200)))
+
+        signInGatekeeper
+        on(DashboardPage)
+        assertNoApprovedApplications()
+      }
+  }
+
   private def assertPendingApplication(appId: String, expected: String) = {
     webDriver.findElement(By.cssSelector(s"[data-pending-$appId]")).getText.replaceAll("\n", " ") shouldBe expected
   }
 
+  private def assertApprovedApplication(appId: String, expected: String) = {
+    webDriver.findElement(By.cssSelector(s"[data-approved-$appId]")).getText.replaceAll("\n", " ") shouldBe expected
+  }
+
   private def assertNoPendingApplications() = {
     webDriver.findElement(By.cssSelector(s"[data-pending-none]")).getText shouldBe "There are no pending applications."
+  }
+
+  private def assertNoApprovedApplications() = {
+    webDriver.findElement(By.cssSelector(s"[data-approved-none]")).getText shouldBe "There are no approved applications."
   }
 }

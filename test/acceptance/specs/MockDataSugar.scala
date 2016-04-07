@@ -34,13 +34,18 @@ package acceptance.specs
 trait MockDataSugar {
   val appPendingApprovalId1 = "df0c32b6-bbb7-46eb-ba50-e6e5459162ff"
   val appPendingApprovalId2 = "a4b47c82-5888-41fd-aa83-da2bbd4679d1"
+  val approvedApp1 = "df0c32b6-bbb7-46eb-ba50-e6e5459162ff"
+  val approvedApp2 = "a4b47c82-5888-41fd-aa83-da2bbd4679d1"
+  val approvedApp3 = "9688ad02-230e-42b7-8f9a-be593565bfdc"
+  val approvedApp4 = "56148b28-65b0-47dd-a3ce-2f02840ddd31"
+
   val applicationDescription = "application description"
   val adminEmail = "admin@test.com"
   val firstName = "John"
   val lastName = "Smith"
   val fullName = s"$firstName $lastName"
 
-  val applications =
+  val applicationsPendingApproval =
     s"""
        |[
        |  {
@@ -64,6 +69,36 @@ trait MockDataSugar {
        |  {
        |    "id": "56148b28-65b0-47dd-a3ce-2f02840ddd31",
        |    "name": "Fourth",
+       |    "submittedOn": 1458832728156,
+       |    "state": "PRODUCTION"
+       |  }
+       |]
+    """.stripMargin
+
+  val approvedApplications =
+    s"""
+       |[
+       |  {
+       |    "id": "$approvedApp1",
+       |    "name": "Application",
+       |    "submittedOn": 1458832690624,
+       |    "state": "PENDING_REQUESTER_VERIFICATION"
+       |  },
+       |  {
+       |    "id": "$approvedApp2",
+       |    "name": "ZApplication",
+       |    "submittedOn": 1458659208000,
+       |    "state": "PRODUCTION"
+       |  },
+       |  {
+       |    "id": "$approvedApp3",
+       |    "name": "RApplication",
+       |    "submittedOn": 1458831410657,
+       |    "state": "PENDING_REQUESTER_VERIFICATION"
+       |  },
+       |  {
+       |    "id": "$approvedApp4",
+       |    "name": "BApplication",
        |    "submittedOn": 1458832728156,
        |    "state": "PRODUCTION"
        |  }

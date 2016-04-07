@@ -117,10 +117,7 @@ object ApplicationWithHistory {
 case class ApplicationWithUpliftRequest(id: UUID,
                                         name: String,
                                         submittedOn: DateTime,
-                                        state: State) {
-
-  val compareBySubmittedOn = (a: ApplicationWithUpliftRequest, b: ApplicationWithUpliftRequest) => a.submittedOn.isBefore(b.submittedOn)
-}
+                                        state: State)
 
 case class UserResponse(email: String,
                         firstName: String,
@@ -178,4 +175,6 @@ case class Admin(name: String, email: String)
 case class ApplicationDetails(id: String, name: String, description: String, submission: SubmissionDetails)
 
 case class ApprovedApplication(details: ApplicationDetails, admins: Seq[Admin], approvedBy: String, approvedOn: DateTime)
+
+case class CategorisedApplications(pendingApproval: Seq[ApplicationWithUpliftRequest], approved: Seq[ApplicationWithUpliftRequest])
 
