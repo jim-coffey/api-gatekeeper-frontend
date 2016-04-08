@@ -16,6 +16,19 @@
         <h1 class="flush--top">@{application.name}</h1>
     </header>
 
+    @if(form.hasErrors) {
+        <div class="flash error-summary error-summary--show" role="group" aria-labelledby="errorSummaryHeading" tabindex="-1">
+            <h2 id="errorSummaryHeading" class="flush--top">There are errors on the page.</h2>
+            <ul>
+            @for(error <- form.errors) {
+                <li role="tooltip">
+                    <a href="#" data-global-error>@Messages(error.message)</a>
+                </li>
+            }
+            </ul>
+        </div>
+    }
+
     <h2>Description:</h2>
     <p class="flush--top" data-description>@{application.description}</p>
 
@@ -34,10 +47,10 @@
                   aria-hidden="true">
             <legend class="visuallyhidden">Choose approve or reject application</legend>
             <label class="block-label--stacked">
-                <input type="radio" id="approve-app" name="action" value="APPROVE" @if(form.data.get("action").getOrElse("APPROVE") == "APPROVE"){ checked }>Approve
+                <input type="radio" id="approve-app" name="action" value="APPROVE" checked/>Approve
             </label>
             <label class="block-label--stacked">
-                <input type="radio" id="reject-app" name="action" value="REJECT" @if(form.data.get("action").getOrElse("") == "REJECT"){ checked }>Reject
+                <input type="radio" id="reject-app" name="action" value="REJECT" />Reject
             </label>
         </fieldset>
 

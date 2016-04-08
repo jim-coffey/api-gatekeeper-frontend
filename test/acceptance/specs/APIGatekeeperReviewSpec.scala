@@ -119,8 +119,8 @@ class APIGatekeeperReviewSpec  extends BaseSpec with SignInSugar with Matchers w
       on(ReviewPage(appPendingApprovalId1, "First Application"))
       clickOnElement("reject-app")
       clickOnSubmit()
-      // TODO: add more checks, once error handling is in place
       on(ReviewPage(appPendingApprovalId1, "First Application"))
+      verifyText("data-global-error","This field is required")
     }
   }
 }
