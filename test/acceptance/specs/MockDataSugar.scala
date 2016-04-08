@@ -41,6 +41,7 @@ trait MockDataSugar {
 
   val applicationDescription = "application description"
   val adminEmail = "admin@test.com"
+  val admin2Email = "admin2@test.com"
   val firstName = "John"
   val lastName = "Smith"
   val fullName = s"$firstName $lastName"
@@ -141,7 +142,7 @@ trait MockDataSugar {
        |      "applicationId": "a6d37b4a-0a80-4b7f-b150-5f8f99fe27ea",
        |      "state": "PENDING_REQUESTER_VERIFICATION",
        |      "actor": {
-       |        "id": "phil.gilbert",
+       |        "id": "gatekeeper.username",
        |        "actorType": "GATEKEEPER"
        |      },
        |      "changedAt": 1459868522961
@@ -150,10 +151,95 @@ trait MockDataSugar {
        |}
     """.stripMargin
 
-  val administrator =
+  def approvedApplication(description: String = "", verified: Boolean = false) = {
+    val verifiedHistory = if (verified) {
+      s""",
+          |    {
+          |      "applicationId": "$approvedApp1",
+          |      "state": "PRODUCTION",
+          |      "actor": {
+          |        "id": "gatekeeper.username",
+          |        "actorType": "GATEKEEPER"
+          |      },
+          |      "changedAt": 1459868522961
+          |    }
+      """.stripMargin
+    } else {
+      ""
+    }
+
+    val state = if (verified) {
+      """
+        |    "state": {
+        |      "name": "PRODUCTION",
+        |      "requestedByEmailAddress": "$adminEmail",
+        |      "updatedOn": 1459868573962
+        |    }
+      """.stripMargin
+    } else {
+      """
+        |    "state": {
+        |      "name": "PENDING_REQUESTER_VERIFICATION",
+        |      "requestedByEmailAddress": "$adminEmail",
+        |      "verificationCode": "pRoPW05BMTQ_HqzTTR0Ent10py9gvstX34_a3dxx4V8",
+        |      "updatedOn": 1459868573962
+        |    }
+      """.stripMargin
+    }
+
     s"""
        |{
-       |"email": "$adminEmail",
+       |  "application": {
+       |    "id": "$approvedApp1",
+       |    "name": "Application",
+       |    "description": "$description",
+       |    "collaborators": [
+       |      {
+       |        "emailAddress": "$adminEmail",
+       |        "role": "ADMINISTRATOR"
+       |      },
+       |      {
+       |        "emailAddress": "collaborator@test.com",
+       |        "role": "DEVELOPER"
+       |      },
+       |      {
+       |        "emailAddress": "$admin2Email",
+       |        "role": "ADMINISTRATOR"
+       |      }
+       |    ],
+       |    "createdOn": 1459866628433,
+       |    "redirectUris": [],
+       |    $state
+       |  },
+       |  "history": [
+       |      {
+       |      "applicationId": "$approvedApp1",
+       |      "state": "PENDING_GATEKEEPER_APPROVAL",
+       |      "actor": {
+       |        "id": "$adminEmail",
+       |        "actorType": "COLLABORATOR"
+       |      },
+       |      "changedAt": 1458659208000
+       |    },
+       |    {
+       |      "applicationId": "$approvedApp1",
+       |      "state": "PENDING_REQUESTER_VERIFICATION",
+       |      "actor": {
+       |        "id": "gatekeeper.username",
+       |        "actorType": "GATEKEEPER"
+       |      },
+       |      "changedAt": 1459868522961
+       |    }
+       |    $verifiedHistory
+       |  ]
+       |}
+    """.stripMargin
+  }
+
+  def administrator(email: String = adminEmail, firstName: String = firstName, lastName: String = lastName) =
+    s"""
+       |{
+       |"email": "$email",
        |"firstName": "$firstName",
        |"lastName": "$lastName",
        |"registrationTime": 1458300873012,

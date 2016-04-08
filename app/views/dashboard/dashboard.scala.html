@@ -41,7 +41,7 @@
                             <li data-approved-@application.id.toString class="app-info">
                                 <div class="app-info__primary">
                                     <h3 class="app-info__heading">
-                                        <a href="approved">@{application.name}</a>
+                                        <a data-view-@application.id.toString href="@{routes.DashboardController.approvedApplicationPage(application.id.toString)}">@{application.name}</a>
                                     </h3>
                                     <p class="app-info__info">submitted: @{dateFormatter.print(application.submittedOn)}</p>
                                 </div>

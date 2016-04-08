@@ -114,19 +114,14 @@ object ApplicationWithHistory {
   implicit val format = Json.format[ApplicationWithHistory]
 }
 
-case class ApplicationWithUpliftRequest(id: UUID,
-                                        name: String,
-                                        submittedOn: DateTime,
-                                        state: State)
+case class ApplicationWithUpliftRequest(id: UUID, name: String, submittedOn: DateTime, state: State)
 
-case class UserResponse(email: String,
-                        firstName: String,
-                        lastName: String,
-                        registrationTime: DateTime,
-                        lastModified: DateTime)
+case class User(email: String, firstName: String, lastName: String) {
+  def fullName = s"$firstName $lastName"
+}
 
-object UserResponse {
-  implicit val format = Json.format[UserResponse]
+object User {
+  implicit val format = Json.format[User]
 }
 
 object ApplicationWithUpliftRequest {
@@ -181,11 +176,9 @@ object SubmissionDetails {
   implicit val format = Json.format[SubmissionDetails]
 }
 
-case class Admin(name: String, email: String)
-
 case class ApplicationDetails(id: String, name: String, description: String, submission: SubmissionDetails)
 
-case class ApprovedApplication(details: ApplicationDetails, admins: Seq[Admin], approvedBy: String, approvedOn: DateTime)
+case class ApprovedApplication(details: ApplicationDetails, admins: Seq[User], approvedBy: String, approvedOn: DateTime, verified: Boolean)
 
 case class CategorisedApplications(pendingApproval: Seq[ApplicationWithUpliftRequest], approved: Seq[ApplicationWithUpliftRequest])
 

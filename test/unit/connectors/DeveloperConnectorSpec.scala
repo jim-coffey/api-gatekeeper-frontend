@@ -21,7 +21,7 @@ import java.net.URLEncoder
 import com.github.tomakehurst.wiremock.client.WireMock._
 import config.WSHttp
 import connectors.DeveloperConnector
-import model.UserResponse
+import model.User
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterEach, Matchers}
 import play.api.libs.json.Json
@@ -51,9 +51,9 @@ class DeveloperConnectorSpec extends UnitSpec with Matchers with ScalaFutures wi
 
     def encode(str: String) = URLEncoder.encode(str, "UTF-8")
 
-    def aUserResponse(email: String) = UserResponse(email, "first", "last", DateTimeUtils.now, DateTimeUtils.now)
+    def aUserResponse(email: String) = User(email, "first", "last")
 
-    def verifyUserResponse(userResponse: UserResponse,
+    def verifyUserResponse(userResponse: User,
                            expectedEmail: String, expectedFirstName: String, expectedLastName: String) = {
       userResponse.email shouldBe expectedEmail
       userResponse.firstName shouldBe expectedFirstName

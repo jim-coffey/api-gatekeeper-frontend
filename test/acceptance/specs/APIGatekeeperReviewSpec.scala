@@ -54,7 +54,7 @@ class APIGatekeeperReviewSpec  extends BaseSpec with SignInSugar with Matchers w
       val encodedEmail=URLEncoder.encode(adminEmail, "UTF-8")
 
       stubFor(get(urlEqualTo(s"/developer?email=$encodedEmail"))
-        .willReturn(aResponse().withBody(administrator).withStatus(200)))
+        .willReturn(aResponse().withBody(administrator()).withStatus(200)))
 
       stubFor(post(urlMatching(s"/application/$appPendingApprovalId1/approve-uplift"))
           .withRequestBody(equalToJson(approveRequest))
@@ -79,7 +79,7 @@ class APIGatekeeperReviewSpec  extends BaseSpec with SignInSugar with Matchers w
       val encodedEmail=URLEncoder.encode(adminEmail, "UTF-8")
 
       stubFor(get(urlEqualTo(s"/developer?email=$encodedEmail"))
-        .willReturn(aResponse().withBody(administrator).withStatus(200)))
+        .willReturn(aResponse().withBody(administrator()).withStatus(200)))
 
       stubFor(post(urlMatching(s"/application/$appPendingApprovalId1/approve-uplift"))
         .withRequestBody(equalToJson(approveRequest))
@@ -107,7 +107,7 @@ class APIGatekeeperReviewSpec  extends BaseSpec with SignInSugar with Matchers w
       val encodedEmail = URLEncoder.encode(adminEmail, "UTF-8")
 
       stubFor(get(urlEqualTo(s"/developer?email=$encodedEmail"))
-        .willReturn(aResponse().withBody(administrator).withStatus(200)))
+        .willReturn(aResponse().withBody(administrator()).withStatus(200)))
 
       stubFor(post(urlMatching(s"/application/$appPendingApprovalId1/reject-uplift"))
         .withRequestBody(equalToJson(rejectRequest))
