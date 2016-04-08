@@ -33,6 +33,14 @@ class APIGatekeeperReviewSpec  extends BaseSpec with SignInSugar with Matchers w
        |}
      """.stripMargin
 
+  val rejectRequest =
+    s"""
+       |{
+       |  "gatekeeperUserId":"$gatekeeperId",
+       |  "reason":"A similar name is already taken by another application"
+       |}
+     """.stripMargin
+
   feature("Approve a request to uplift an application") {
 
     scenario("I see the review page and I am able to approve the uplift request") {
@@ -83,6 +91,36 @@ class APIGatekeeperReviewSpec  extends BaseSpec with SignInSugar with Matchers w
       on(ReviewPage(appPendingApprovalId1, "First Application"))
       clickOnSubmit()
       on(DashboardPage)
+    }
+  }
+
+  feature("Reject a request to uplift an application") {
+
+    scenario("I see the review page and I am able to reject the uplift request with a reason") {
+
+      stubFor(get(urlEqualTo("/gatekeeper/applications"))
+        .willReturn(aResponse().withBody(applicationsPendingApproval).withStatus(200)))
+
+      stubFor(get(urlEqualTo(s"/gatekeeper/application/$appPendingApprovalId1"))
+        .willReturn(aResponse().withBody(application).withStatus(200)))
+
+      val encodedEmail = URLEncoder.encode(adminEmail, "UTF-8")
+
+      stubFor(get(urlEqualTo(s"/developer?email=$encodedEmail"))
+        .willReturn(aResponse().withBody(administrator).withStatus(200)))
+
+      stubFor(post(urlMatching(s"/application/$appPendingApprovalId1/reject-uplift"))
+        .withRequestBody(equalToJson(rejectRequest))
+        .willReturn(aResponse().withStatus(200)))
+
+      signInGatekeeper
+      on(DashboardPage)
+      clickOnLink(s"data-review-$appPendingApprovalId1")
+      on(ReviewPage(appPendingApprovalId1, "First Application"))
+      clickOnElement("reject-app")
+      clickOnSubmit()
+      // TODO: add more checks, once error handling is in place
+      on(ReviewPage(appPendingApprovalId1, "First Application"))
     }
   }
 }

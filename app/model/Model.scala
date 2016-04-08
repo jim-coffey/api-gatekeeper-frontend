@@ -137,7 +137,7 @@ object ApplicationWithUpliftRequest {
   val compareBySubmittedOn = (a: ApplicationWithUpliftRequest, b: ApplicationWithUpliftRequest) => a.submittedOn.isBefore(b.submittedOn)
 }
 
-class ApproveUpliftPreconditionFailed extends Throwable
+class PreconditionFailed extends Throwable
 
 class FetchApplicationsFailed extends Throwable
 
@@ -152,6 +152,17 @@ object ApproveUpliftRequest {
 sealed trait ApproveUpliftSuccessful
 
 case object ApproveUpliftSuccessful extends ApproveUpliftSuccessful
+
+
+case class RejectUpliftRequest(gatekeeperUserId: String, reason: String)
+
+object RejectUpliftRequest {
+  implicit val format = Json.format[RejectUpliftRequest]
+}
+
+sealed trait RejectUpliftSuccessful
+
+case object RejectUpliftSuccessful extends RejectUpliftSuccessful
 
 object UpliftAction extends Enumeration {
   type UpliftAction = Value

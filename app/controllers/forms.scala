@@ -16,15 +16,17 @@
 
 package controllers
 
-import play.api.data.Form
+import play.api.data._
 import play.api.data.Forms._
+import uk.gov.voa.play.form.ConditionalMappings._
 
-case class HandleUpliftForm(action: String)
+case class HandleUpliftForm(action: String, reason: Option[String])
 
 object HandleUpliftForm {
   lazy val form = Form(
     mapping(
-      "action" -> nonEmptyText
+      "action" -> nonEmptyText,
+      "reason" -> mandatoryIfEqual("action","REJECT",nonEmptyText)
     )(HandleUpliftForm.apply)(HandleUpliftForm.unapply)
   )
 }
