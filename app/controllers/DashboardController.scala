@@ -92,9 +92,34 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
       fetchApplicationDetails(appId) map (details => Ok(review(HandleUpliftForm.form, details)))
   }
 
-  def approvedApplicationPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
+  def approvedApplicationPage(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
-      Future.successful(Ok(approved()))
+
+      def lastApproval(app: ApplicationWithHistory): StateHistory = {
+        app.history.filter(_.state == State.PENDING_REQUESTER_VERIFICATION)
+          .sortWith(StateHistory.ascendingDateForAppId)
+          .lastOption.getOrElse(throw new InconsistentDataState("pending requester verification state history item not found"))
+      }
+
+      def administrators(app: ApplicationWithHistory): Future[Seq[User]] = {
+        val emails: Set[String] = app.application.admins.map(_.emailAddress)
+        developerConnector.fetchByEmails(emails.toSeq)
+      }
+
+      def application(app: ApplicationResponse, approved: StateHistory, admins: Seq[User], submissionDetails: SubmissionDetails) = {
+        val verified = app.state.name == State.PRODUCTION
+        val details = applicationDetails(app, submissionDetails)
+
+        ApprovedApplication(details, admins, approved.actor.id, approved.changedAt, verified)
+      }
+
+      for {
+        app <- applicationConnector.fetchApplication(appId)
+        approval = lastApproval(app)
+        submission <- lastSubmission(app)
+        admins <- administrators(app)
+        approvedApp = application(app.application, approval, admins, submission)
+      } yield Ok(approved(approvedApp))
   }
 
   def handleUplift(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
@@ -123,5 +148,18 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
       }
 
       requestForm.fold(errors, addApplicationWithValidForm)
+  }
+
+  private def lastSubmission(app: ApplicationWithHistory)(implicit hc: HeaderCarrier): Future[SubmissionDetails] = {
+    val submission: StateHistory = app.history.filter(_.state == State.PENDING_GATEKEEPER_APPROVAL)
+      .sortWith(StateHistory.ascendingDateForAppId)
+      .lastOption.getOrElse(throw new InconsistentDataState("pending gatekeeper approval state history item not found"))
+
+    developerConnector.fetchByEmail(submission.actor.id).map(s =>
+      SubmissionDetails(s"${s.firstName} ${s.lastName}", s.email, submission.changedAt))
+  }
+
+  private def applicationDetails(app: ApplicationResponse, submission: SubmissionDetails) = {
+    ApplicationDetails(app.id.toString, app.name, app.description.getOrElse(""), submission)
   }
 }

@@ -1,55 +1,76 @@
-@()(implicit request: Request[_], userFullName: Option[String])
-
+@import model.ApprovedApplication
+@import org.joda.time.format.DateTimeFormat
+@(application: ApprovedApplication)(implicit request: Request[_], userFullName: Option[String])
 
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
-<div class="content__body">
 
-    <nav class="breadcrumb-nav">
-        <ul>
-            <li class="breadcrumb-nav__item"><a href="dashboard">Application names</a></li>
-            <li class="breadcrumb-nav__item breadcrumb-nav__item--trail" aria-hidden="true"></li>
-            <li class="breadcrumb-nav__item">application name</li>
-        </ul>
-    </nav>
+    @defining(DateTimeFormat.forPattern("dd MMMM yyyy")) { dateFormatter =>
+        <div class="content__body">
 
-    <header>
-        <h1 class="flush--top">Application name here</h1>
-    </header>
+            <nav class="breadcrumb-nav">
+                <ul>
+                    <li class="breadcrumb-nav__item"><a href="dashboard">Application names</a></li>
+                    <li class="breadcrumb-nav__item breadcrumb-nav__item--trail" aria-hidden="true"></li>
+                    <li class="breadcrumb-nav__item">@application.details.name</li>
+                </ul>
+            </nav>
 
-    <details>
-        <summary class="status--verified">Verified</summary>
-        <div>
-            <p class="panel-indent">The submitter has verified that they are still associated with the email address associated with this application.</p>
+            <header>
+                <h1 class="flush--top">@application.details.name</h1>
+            </header>
+
+            <details>
+                @if(application.verified) {
+                    <summary data-status class="status--verified">Verified</summary>
+                    <div>
+                        <p data-summary class="panel-indent">
+                            The submitter has verified that they still have access to the email address associated with this application.
+                        </p>
+                    </div>
+
+                } else {
+                    <summary data-status class="status--not-verified">Not Verified</summary>
+                    <div>
+                        <p data-summary class="panel-indent">
+                            The submitter has not verified that they still have access to the email address associated with this application.
+                        </p>
+                    </div>
+                }
+            </details>
+
+            <h2 class="heading--font-reset">Description:</h2>
+            @if(application.details.description.nonEmpty) {
+                <p data-description class="flush--top">@application.details.description</p>
+            } else {
+                <p data-description class="fadded-text">No description added</p>
+            }
+
+            <h2 class="heading--font-reset">Submitter:</h2>
+            <p data-submitter-name class="flush--top">@application.details.submission.submitterName</p>
+            <p data-submitter-email class="flush--top">@application.details.submission.submitterEmail</p>
+
+            <h2 class="heading--font-reset">Admins:</h2>
+            <table>
+                <caption class="visuallyhidden">Table showing administrators</caption>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @for(admin <- application.admins) {
+                    <tr data-admin-@admin.email>
+                        <td>@admin.fullName</td>
+                        <td>@admin.email</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            <p data-submitted-on class="faded-text">Submitted: @{dateFormatter.print(application.details.submission.submittedOn)}</p>
+            <p data-approved-on class="faded-text">Approved: @{dateFormatter.print(application.approvedOn)}</p>
+            <p data-approved-by class="faded-text">Approved by: @application.approvedBy</p>
+            <a data-back-link href="dashboard">Go back to the applications list</a>
         </div>
-    </details>
-
-    <h2 class="heading--font-reset">Description:</h2>
-    <p class="flush--top">Supporting Barclays’ customers in becoming more tax efficient.</p>
-
-    <h2 class="heading--font-reset">Submitter:</h2>
-    <p>John Smith</p>
-    <p class="flush--top">francis.jackson@@barclays-digital.com</p>
-
-    <h2 class="heading--font-reset">Admins:</h2>
-    <table>
-        <caption class="visuallyhidden">Table showing administrators</caption>
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>Mark Reese</td>
-            <td>mark.reese@@gmail.com</td>
-        </tr>
-        </tbody>
-    </table>
-    <p class="faded-text">Submitted: 13 February 2016</p>
-    <p class="faded-text">Approved: 15 February 2016</p>
-    <p class="faded-text">Approved by: John Smith</p>
-    <a href="dashboard">Go back to the applications list</a>
-
-</div>
+    }
 }
