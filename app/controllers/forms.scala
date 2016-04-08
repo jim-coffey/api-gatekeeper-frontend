@@ -16,6 +16,7 @@
 
 package controllers
 
+import model.UpliftAction
 import play.api.data._
 import play.api.data.Forms._
 import uk.gov.voa.play.form.ConditionalMappings._
@@ -23,10 +24,20 @@ import uk.gov.voa.play.form.ConditionalMappings._
 case class HandleUpliftForm(action: String, reason: Option[String])
 
 object HandleUpliftForm {
+
+  private def actionValidator =
+    Forms.text.verifying("invalid.action", action => UpliftAction.from(action).isDefined)
+
   lazy val form = Form(
     mapping(
-      "action" -> nonEmptyText,
+      "action" -> actionValidator,
       "reason" -> mandatoryIfEqual("action","REJECT",nonEmptyText)
     )(HandleUpliftForm.apply)(HandleUpliftForm.unapply)
   )
+
+  def unrecognisedAction(form: Form[HandleUpliftForm]) = {
+    form
+      .withError("submissionError", "true")
+      .withGlobalError("Action is not recognised")
+  }
 }
