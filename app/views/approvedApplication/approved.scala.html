@@ -21,7 +21,9 @@
 
             <details>
                 @if(application.verified) {
-                    <summary data-status class="status--verified">Verified</summary>
+                    <summary>
+                        <span data-status class="status--verified">Verified</span>
+                    </summary>
                     <div>
                         <p data-summary class="panel-indent">
                             The submitter has verified that they still have access to the email address associated with this application.
@@ -29,7 +31,9 @@
                     </div>
 
                 } else {
-                    <summary data-status class="status--not-verified">Not Verified</summary>
+                    <summary>
+                        <span data-status class="status--not-verified">Not Verified</span>
+                    </summary>
                     <div>
                         <p data-summary class="panel-indent">
                             The submitter has not verified that they still have access to the email address associated with this application.

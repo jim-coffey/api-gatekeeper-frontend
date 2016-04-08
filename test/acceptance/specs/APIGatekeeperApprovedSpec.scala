@@ -39,7 +39,7 @@ class APIGatekeeperApprovedSpec  extends BaseSpec with SignInSugar with Matchers
       clickOnLink(s"data-view-$approvedApp1")
       on(ApprovedPage(approvedApp1, "Application"))
 
-      verifyText("data-status", "►Verified")
+      verifyText("data-status", "Verified")
       clickOnLink("data-status")
       verifyText("data-summary", "The submitter has verified that they still have access to the email address associated with this application.")
       verifyText("data-description", "application description")
@@ -57,7 +57,7 @@ class APIGatekeeperApprovedSpec  extends BaseSpec with SignInSugar with Matchers
       clickOnLink(s"data-view-$approvedApp1")
       on(ApprovedPage(approvedApp1, "Application"))
 
-      verifyText("data-status", "►Not Verified")
+      verifyText("data-status", "Not Verified")
       clickOnLink("data-status")
       verifyText("data-summary", "The submitter has not verified that they still have access to the email address associated with this application.")
       verifyText("data-description", "application description")
@@ -77,6 +77,19 @@ class APIGatekeeperApprovedSpec  extends BaseSpec with SignInSugar with Matchers
 
       verifyText("data-description", "No description added")
       assertApplicationDetails
+    }
+
+    scenario("Navigate back to the dashboard page") {
+      stubApplicationListAndDevelopers
+      stubFor(get(urlEqualTo(s"/gatekeeper/application/$approvedApp1"))
+        .willReturn(aResponse().withBody(approvedApplication()).withStatus(200)))
+
+      signInGatekeeper
+      on(DashboardPage)
+      clickOnLink(s"data-view-$approvedApp1")
+      on(ApprovedPage(approvedApp1, "Application"))
+      clickOnLink("data-back-link")
+      on(DashboardPage)
     }
   }
 
