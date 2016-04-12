@@ -68,6 +68,10 @@ trait NavigationSugar extends WebBrowser with Eventually with Assertions with Ma
     webDriver.findElement(By.id(id)).click()
   }
 
+  def verifyLinkPresent(attributeName: String, expectedUrl: String)(implicit webDriver: WebDriver) = {
+    webDriver.findElement(By.cssSelector(s"[$attributeName]")).getAttribute("href") contains expectedUrl
+  }
+
   def verifyText(attributeName: String, expected: String)(implicit webDriver: WebDriver) = {
     webDriver.findElement(By.cssSelector(s"[$attributeName]")).getText shouldBe expected
   }

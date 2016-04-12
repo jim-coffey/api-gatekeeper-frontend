@@ -24,6 +24,7 @@ trait AppConfig {
   val analyticsToken: String
   val analyticsHost: String
   val nameDisplayLimit: Int
+  val devHubBaseUrl: String
 }
 
 object FrontendAppConfig extends AppConfig with ServicesConfig {
@@ -35,4 +36,5 @@ object FrontendAppConfig extends AppConfig with ServicesConfig {
   override lazy val assetsPrefix = loadConfig("assets.url") + loadConfig("assets.version")
   override lazy val analyticsToken = loadConfig("google-analytics.token")
   override lazy val analyticsHost = loadConfig("google-analytics.host")
+  override lazy val devHubBaseUrl = loadConfig("devHubBaseUrl")
 }
