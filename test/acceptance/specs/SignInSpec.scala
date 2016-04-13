@@ -38,7 +38,7 @@ class SignInSpec extends BaseSpec {
           |     },
           |     "expires_in":14400,
           |     "roles":[{"scope":"api","name":"gatekeeper"}],
-          |     "authority_uri":"/auth/oid/joe.blogs",
+          |     "authority_uri":"/auth/oid/joe.test",
           |     "token_type":"Bearer"
           |}
         """.stripMargin
@@ -53,7 +53,7 @@ class SignInSpec extends BaseSpec {
 
       goOn(SignInPage)
 
-      SignInPage.signIn("joe.blogs", "password")
+      SignInPage.signIn("joe.test", "password")
 
       on(DashboardPage)
     }
@@ -65,7 +65,7 @@ class SignInSpec extends BaseSpec {
 
         goOn(SignInPage)
 
-        SignInPage.signIn("joe.blogs", "password")
+        SignInPage.signIn("joe.test", "password")
 
         on(SignInPage)
         SignInPage.isError shouldBe true
@@ -81,7 +81,7 @@ class SignInSpec extends BaseSpec {
           |     },
           |     "expires_in":14400,
           |     "roles":[{"scope":"something","name":"gatekeeper"}],
-          |     "authority_uri":"/auth/oid/joe.blogs",
+          |     "authority_uri":"/auth/oid/joe.test",
           |     "token_type":"Bearer"
           |}
         """.stripMargin
@@ -93,7 +93,7 @@ class SignInSpec extends BaseSpec {
 
       goOn(SignInPage)
 
-      SignInPage.signIn("joe.blogs", "password")
+      SignInPage.signIn("joe.test", "password")
       on(DashboardPage)
       DashboardPage.isUnauthorised shouldBe true
     }

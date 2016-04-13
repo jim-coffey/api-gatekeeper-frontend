@@ -43,7 +43,7 @@ trait MockDataSugar {
   val adminEmail = "admin@test.com"
   val admin2Email = "admin2@test.com"
   val firstName = "John"
-  val lastName = "Smith"
+  val lastName = "Test"
   val fullName = s"$firstName $lastName"
 
   val applicationsPendingApproval =

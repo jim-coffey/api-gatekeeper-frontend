@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.openqa.selenium.WebDriver
 
 trait SignInSugar extends NavigationSugar {
-  val gatekeeperId: String = "joe.blogs"
+  val gatekeeperId: String = "joe.test"
 
   def signInGatekeeper()(implicit webDriver: WebDriver) = {
 
