@@ -1,12 +1,14 @@
 @import model.ApplicationDetails
 @import config.FrontendAppConfig
+@import include._
+
 @(form: Form[controllers.HandleUpliftForm], application: ApplicationDetails)(implicit request: Request[_], userFullName: Option[String])
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
 <div class="content__body">
 
     <nav class="breadcrumb-nav">
         <ul>
-            <li class="breadcrumb-nav__item"><a href="dashboard">Application names</a></li>
+            <li class="breadcrumb-nav__item"><a href="/api-gatekeeper/dashboard">Application names</a></li>
             <li class="breadcrumb-nav__item breadcrumb-nav__item--trail" aria-hidden="true"></li>
             <li class="breadcrumb-nav__item">@{application.name}</li>
         </ul>
@@ -22,7 +24,7 @@
             <ul>
             @for(error <- form.errors) {
                 <li role="tooltip">
-                    <a href="#" data-global-error>@Messages(error.message)</a>
+                    <a href="#@error.key" data-global-error>@Messages(error.message)</a>
                 </li>
             }
             </ul>
@@ -36,37 +38,44 @@
     <p class="flush--top" data-submitter-name>@{application.submission.submitterName}</p>
     <p class="flush--top" data-submitter-email>@{application.submission.submitterEmail}</p>
 
-    @helper.form(action = controllers.routes.DashboardController.handleUplift(application.id), 'class -> "form") {
-        @helper.CSRF.formField
+    @helper.form(action = controllers.routes.DashboardController.handleUplift(application.id),
+        'class -> "form") {
 
-        <fieldset class="form-field-group js-toggle"
-                  data-target="rejection-reason"
-                  data-trigger="js-toggle-trigger"
-                  data-open="reject-app"
-                  data-close="approve-app"
-                  aria-hidden="true">
-            <legend class="visuallyhidden">Choose approve or reject application</legend>
-            <label class="block-label--stacked">
-                <input type="radio" id="approve-app" name="action" value="APPROVE" checked/>Approve
-            </label>
-            <label class="block-label--stacked">
-                <input type="radio" id="reject-app" name="action" value="REJECT" />Reject
-            </label>
-        </fieldset>
+        <div data-journey-dynamic-radios>
+            @helper.CSRF.formField
 
-        <div id="rejection-reason"
-             class="form-field toggle-target"
-             aria-expanded="false"
-             aria-visible="false">
-            <label for="rejection-text"><strong>Enter reason for rejection:</strong></label>
-            <p class="form-hint flush--top">Insert applicable guideline from <a data-naming-guidelines href="@{FrontendAppConfig.devHubBaseUrl}/api-documentation/docs/name-guidelines">naming guidelines</a>.</p>
-            <textarea id="rejection-text" name="reason" class="textarea--3-4 flush--top">@form.data.get("reason")</textarea>
+            <fieldset class="form-field-group js-toggle"
+                data-target="rejection-reason"
+                data-trigger="js-toggle-trigger"
+                data-open="reject-app"
+                data-close="approve-app"
+                aria-hidden="true">
+                <legend class="visuallyhidden">Choose approve or reject application</legend>
+                <label class="block-label--stacked">
+                    <input type="radio" id="approve-app" name="action" value="APPROVE" data-journey-val="Approved" @if(form.errors("reason").isEmpty) {checked}/>Approve
+                </label>
+                <label class="block-label--stacked">
+                    <input type="radio" id="reject-app" name="action" value="REJECT" data-journey-val="Rejected" @if(form.errors("reason").nonEmpty) {checked}/>Reject
+                </label>
+            </fieldset>
+
+            <div id="rejection-reason"
+                 class="form-field toggle-target @if(form.errors("reason").isEmpty) {hidden} else {form-field--error}"
+                 aria-expanded="false"
+                 aria-visible="false">
+                <label for="reason"><strong>Enter reason for rejection:</strong></label>
+                <p class="form-hint flush--top">Insert applicable guideline from <a data-naming-guidelines href="@{FrontendAppConfig.devHubBaseUrl}/api-documentation/docs/name-guidelines">naming guidelines</a>.</p>
+                @fieldError(form.errors, "reason", true)
+                <textarea id="reason" name="reason" class="textarea--3-4 flush--top @if(form.errors("reason").nonEmpty) {error-field}">@form.data.get("reason")</textarea>
+            </div>
+
+            <div class="form-field">
+                <input id="submit" type="submit" class="button" role="button" value="Submit" data-journey-click="gate-keeper:Click:@if(form.errors("reason").isEmpty){Approved}else{Rejected}" data-journey-target/>
+                <a href="/api-gatekeeper/dashboard" class="button button--link">Cancel</a>
+            </div>
+
         </div>
 
-        <div class="form-field">
-            <input id="submit" type="submit" class="button" role="button" value="Submit"/>
-            <a href="dashboard" class="button button--link">Cancel</a>
-        </div>
     }
 
 </div>
