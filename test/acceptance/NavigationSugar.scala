@@ -22,8 +22,11 @@ import org.scalatest.{Assertions, Matchers}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.selenium.WebBrowser
 import org.scalatest.selenium.WebBrowser.{go => goo}
+import org.scalatest.time.{Millis, Seconds, Span}
 
 trait NavigationSugar extends WebBrowser with Eventually with Assertions with Matchers {
+
+  implicit override val patienceConfig = PatienceConfig(timeout = scaled(Span(3, Seconds)), interval = scaled(Span(100, Millis)))
 
   def goOn(page: WebPage)(implicit webDriver: WebDriver) = {
     go(page)
