@@ -169,7 +169,7 @@ trait MockDataSugar {
     }
 
     val state = if (verified) {
-      """
+      s"""
         |    "state": {
         |      "name": "PRODUCTION",
         |      "requestedByEmailAddress": "$adminEmail",
@@ -177,7 +177,7 @@ trait MockDataSugar {
         |    }
       """.stripMargin
     } else {
-      """
+      s"""
         |    "state": {
         |      "name": "PENDING_REQUESTER_VERIFICATION",
         |      "requestedByEmailAddress": "$adminEmail",
