@@ -45,7 +45,7 @@ class DeveloperConnectorSpec extends UnitSpec with Matchers with ScalaFutures wi
 
   "fetchByEmail" should {
     val developer1Email = "developer1@email.com"
-    val developer2Email = "developer2@email.com"
+    val developer2Email = "developer2+test@email.com"
 
     val timeStamp = DateTimeUtils.now
 
@@ -68,6 +68,15 @@ class DeveloperConnectorSpec extends UnitSpec with Matchers with ScalaFutures wi
       )
       val result = await(connector.fetchByEmail(developer1Email))
       verifyUserResponse(result,developer1Email,"first","last")
+    }
+
+    "fetch developer2 by email" in new Setup {
+      stubFor(get(urlEqualTo(s"/developer?email=${encode(developer2Email)}")).willReturn(
+        aResponse().withStatus(200).withBody(
+          Json.toJson(aUserResponse(developer2Email)).toString()))
+      )
+      val result = await(connector.fetchByEmail(developer2Email))
+      verifyUserResponse(result,developer2Email,"first","last")
     }
 
     "fetch all developers by emails" in new Setup {

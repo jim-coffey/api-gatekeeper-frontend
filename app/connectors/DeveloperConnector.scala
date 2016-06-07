@@ -16,6 +16,8 @@
 
 package connectors
 
+import java.net.URLEncoder
+
 import config.WSHttp
 import connectors.AuthConnector._
 import model.User
@@ -31,10 +33,12 @@ trait DeveloperConnector {
   val http: HttpPost with HttpGet
 
   def fetchByEmail(email: String)(implicit hc: HeaderCarrier) = {
-    http.GET[User](s"$developerBaseUrl/developer?email=$email")
+    http.GET[User](s"$developerBaseUrl/developer?email=${encode(email)}")
   }
 
   def fetchByEmails(emails: Seq[String])(implicit hc: HeaderCarrier) = {
-    http.GET[Seq[User]](s"$developerBaseUrl/developers?emails=${emails.mkString(",")}")
+    http.GET[Seq[User]](s"$developerBaseUrl/developers?emails=${encode(emails.mkString(","))}")
   }
+
+  private def encode(str: String) = URLEncoder.encode(str, "UTF-8")
 }
