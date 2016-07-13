@@ -1,0 +1,40 @@
+@import model.ApprovedApplication
+@import org.joda.time.format.DateTimeFormat
+@(developers: Seq[model.User], emails: String)(implicit request: Request[_], userFullName: Option[String])
+
+@main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
+
+<div class="content__body">
+    <nav class="breadcrumb-nav">
+        <ul>
+            <li class="breadcrumb-nav__item"><a href="dashboard">Dashboard</a></li>
+            <li class="breadcrumb-nav__item breadcrumb-nav__item--trail" aria-hidden="true"></li>
+            <li class="breadcrumb-nav__item">All Developers</li>
+        </ul>
+    </nav>
+
+    <header>
+        <h1 class="flush--top">Developers</h1>
+    </header>
+
+    <a href="mailto:?bcc=@emails">Click here</a> to open your external email client and create a new email with all emails as bcc.
+
+    <table>
+        <caption class="visuallyhidden">Table showing all developers</caption>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(developer <- developers) {
+        <tr data-admin-@developer.email>
+            <td>@developer.fullName</td>
+            <td>@developer.email</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+}

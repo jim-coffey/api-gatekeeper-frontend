@@ -41,4 +41,8 @@ trait DeveloperConnector {
   }
 
   private def encode(str: String) = URLEncoder.encode(str, "UTF-8")
+
+  def fetchAll()(implicit hc: HeaderCarrier) = {
+    http.GET[Seq[User]](s"$developerBaseUrl/developers/all")
+  }
 }

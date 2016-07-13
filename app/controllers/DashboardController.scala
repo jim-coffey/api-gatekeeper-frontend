@@ -29,25 +29,26 @@ import uk.gov.hmrc.play.http.HeaderCarrier
 import utils.{GatekeeperAuthProvider, GatekeeperAuthWrapper}
 import views.html.approvedApplication._
 import views.html.dashboard._
+import views.html.developers.developers
 import views.html.review._
 
 import scala.concurrent.Future
 
 object DashboardController extends DashboardController {
+  override val applicationConnector = ApplicationConnector
+  override val developerConnector: DeveloperConnector = DeveloperConnector
+
   override def authProvider = GatekeeperAuthProvider
 
   override def authConnector = AuthConnector
-
-  override val applicationConnector = ApplicationConnector
-  override val developerConnector: DeveloperConnector = DeveloperConnector
 }
 
 trait DashboardController extends FrontendController with GatekeeperAuthWrapper {
 
-  implicit def dateTimeOrdering: Ordering[DateTime] = Ordering.fromLessThan(_ isBefore _)
-
   val applicationConnector: ApplicationConnector
   val developerConnector: DeveloperConnector
+
+  implicit def dateTimeOrdering: Ordering[DateTime] = Ordering.fromLessThan(_ isBefore _)
 
   def dashboardPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
@@ -64,27 +65,6 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
         apps <- applicationConnector.fetchApplications()
         mappedApps = applicationsForDashboard(apps)
       } yield Ok(dashboard(mappedApps))
-  }
-
-  private def fetchApplicationDetails(appId: String)(implicit hc: HeaderCarrier): Future[ApplicationDetails] = {
-    def lastSubmission(app: ApplicationWithHistory): Future[SubmissionDetails] = {
-      val submission: StateHistory = app.history.filter(_.state == State.PENDING_GATEKEEPER_APPROVAL)
-        .sortWith(StateHistory.ascendingDateForAppId)
-        .lastOption.getOrElse(throw new InconsistentDataState("pending gatekeeper approval state history item not found"))
-
-      developerConnector.fetchByEmail(submission.actor.id).map(s =>
-        SubmissionDetails(s"${s.firstName} ${s.lastName}", s.email, submission.changedAt)
-      )
-    }
-
-    def applicationDetails(app: ApplicationResponse, submission: SubmissionDetails) = {
-      ApplicationDetails(app.id.toString, app.name, app.description.getOrElse(""), submission)
-    }
-
-    for {
-      app <- applicationConnector.fetchApplication(appId)
-      submission <- lastSubmission(app)
-    } yield applicationDetails(app.application, submission)
   }
 
   def reviewPage(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
@@ -118,8 +98,30 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
         approval = lastApproval(app)
         submission <- lastSubmission(app)
         admins <- administrators(app)
-        approvedApp = application(app.application, approval, admins, submission)
+        approvedApp: ApprovedApplication = application(app.application, approval, admins, submission)
       } yield Ok(approved(approvedApp))
+  }
+
+  private def lastSubmission(app: ApplicationWithHistory)(implicit hc: HeaderCarrier): Future[SubmissionDetails] = {
+    val submission: StateHistory = app.history.filter(_.state == State.PENDING_GATEKEEPER_APPROVAL)
+      .sortWith(StateHistory.ascendingDateForAppId)
+      .lastOption.getOrElse(throw new InconsistentDataState("pending gatekeeper approval state history item not found"))
+
+    developerConnector.fetchByEmail(submission.actor.id).map(s =>
+      SubmissionDetails(s"${s.firstName} ${s.lastName}", s.email, submission.changedAt))
+  }
+
+  private def applicationDetails(app: ApplicationResponse, submission: SubmissionDetails) = {
+    ApplicationDetails(app.id.toString, app.name, app.description.getOrElse(""), submission)
+  }
+
+  def developersPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
+    implicit request => implicit hc =>
+      for {
+        devs <- developerConnector.fetchAll
+        (h,t) = (devs.head, devs.tail)
+        emails = t.foldLeft(h.email)((s, u) => s"$s,${u.email}")
+      } yield Ok(developers(devs, emails))
   }
 
   def handleUplift(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
@@ -150,16 +152,24 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
       requestForm.fold(errors, addApplicationWithValidForm)
   }
 
-  private def lastSubmission(app: ApplicationWithHistory)(implicit hc: HeaderCarrier): Future[SubmissionDetails] = {
-    val submission: StateHistory = app.history.filter(_.state == State.PENDING_GATEKEEPER_APPROVAL)
-      .sortWith(StateHistory.ascendingDateForAppId)
-      .lastOption.getOrElse(throw new InconsistentDataState("pending gatekeeper approval state history item not found"))
+  private def fetchApplicationDetails(appId: String)(implicit hc: HeaderCarrier): Future[ApplicationDetails] = {
+    def lastSubmission(app: ApplicationWithHistory): Future[SubmissionDetails] = {
+      val submission: StateHistory = app.history.filter(_.state == State.PENDING_GATEKEEPER_APPROVAL)
+        .sortWith(StateHistory.ascendingDateForAppId)
+        .lastOption.getOrElse(throw new InconsistentDataState("pending gatekeeper approval state history item not found"))
 
-    developerConnector.fetchByEmail(submission.actor.id).map(s =>
-      SubmissionDetails(s"${s.firstName} ${s.lastName}", s.email, submission.changedAt))
-  }
+      developerConnector.fetchByEmail(submission.actor.id).map(s =>
+        SubmissionDetails(s"${s.firstName} ${s.lastName}", s.email, submission.changedAt)
+      )
+    }
 
-  private def applicationDetails(app: ApplicationResponse, submission: SubmissionDetails) = {
-    ApplicationDetails(app.id.toString, app.name, app.description.getOrElse(""), submission)
+    private def applicationDetails(app: ApplicationResponse, submission: SubmissionDetails) = {
+      ApplicationDetails(app.id.toString, app.name, app.description.getOrElse(""), submission)
+    }
+
+    for {
+      app <- applicationConnector.fetchApplication(appId)
+      submission <- lastSubmission(app)
+    } yield applicationDetails(app.application, submission)
   }
 }

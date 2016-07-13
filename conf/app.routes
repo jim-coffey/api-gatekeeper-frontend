@@ -7,6 +7,7 @@ GET         /logout                                controllers.AccountController
 
 GET         /dashboard                             controllers.DashboardController.dashboardPage
 GET         /review                                controllers.DashboardController.reviewPage(id: String)
+GET         /developers                            controllers.DashboardController.developersPage
 
 GET         /approved                              controllers.DashboardController.approvedApplicationPage(id: String)
 
