@@ -95,7 +95,7 @@ class DeveloperConnectorSpec extends UnitSpec with Matchers with ScalaFutures wi
         aResponse().withStatus(200).withBody(
           Json.toJson(Seq(aUserResponse(developer1Email),aUserResponse(developer2Email))).toString()))
       )
-      val result = await(connector.fetchByEmails(Seq(developer1Email,developer2Email)))
+      val result = await(connector.fetchAll())
       verifyUserResponse(result(0),developer1Email,"first","last")
       verifyUserResponse(result(1),developer2Email,"first","last")
     }

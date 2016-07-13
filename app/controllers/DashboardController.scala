@@ -163,7 +163,7 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
       )
     }
 
-    private def applicationDetails(app: ApplicationResponse, submission: SubmissionDetails) = {
+    def applicationDetails(app: ApplicationResponse, submission: SubmissionDetails) = {
       ApplicationDetails(app.id.toString, app.name, app.description.getOrElse(""), submission)
     }
 
