@@ -18,7 +18,7 @@ package unit.controllers
 
 import connectors.AuthConnector.InvalidCredentials
 import connectors.{ApplicationConnector, AuthConnector, DeveloperConnector}
-import controllers.DashboardController
+import controllers.DevelopersController
 import model.LoginDetails.{JsonStringDecryption, JsonStringEncryption}
 import model._
 import org.joda.time.DateTime
@@ -37,12 +37,12 @@ import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 import scala.concurrent.Future
 
-class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
+class DeveloperControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
 
   Helpers.running(fakeApplication) {
 
     trait Setup {
-      val underTest = new DashboardController {
+      val underTest = new DevelopersController {
         val authConnector = mock[AuthConnector]
         val authProvider = mock[AuthenticationProvider]
         val applicationConnector = mock[ApplicationConnector]
@@ -62,14 +62,13 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
     }
 
-
-    "dashboardPage" should {
+    "developersPage" should {
 
       "go to loginpage with error if user is not authenticated" in new Setup {
         val loginDetails = LoginDetails("userName", Protected("password"))
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.failed(new InvalidCredentials))
 
-        val result = await(underTest.dashboardPage()(aLoggedOutRequest))
+        val result = await(underTest.developersPage()(aLoggedOutRequest))
 
         redirectLocation(result) shouldBe Some("/api-gatekeeper/login")
       }
@@ -81,9 +80,9 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
         given(underTest.authConnector.authorized(any[Role])(any[HeaderCarrier])).willReturn(Future.successful(true))
-        given(underTest.applicationConnector.fetchApplications()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[ApplicationWithUpliftRequest]))
+        given(underTest.developerConnector.fetchAll()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[User]))
 
-        val result = await(underTest.dashboardPage()(aLoggedInRequest))
+        val result = await(underTest.developersPage()(aLoggedInRequest))
 
         status(result) shouldBe 200
         bodyOf(result) should include("Dashboard")
@@ -96,7 +95,7 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
         given(underTest.authConnector.authorized(any[Role])(any[HeaderCarrier])).willReturn(Future.successful(false))
 
-        val result = await(underTest.dashboardPage()(aLoggedInRequest))
+        val result = await(underTest.developersPage()(aLoggedInRequest))
 
         status(result) shouldBe 401
         bodyOf(result) should include("Only Authorised users can access the requested page")
@@ -104,28 +103,27 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
     }
 
-    "handleUplift" should {
+    "developersPage" should {
       val applicationId = "applicationId"
       val userName = "userName"
 
-      "call backend with correct application id and gatekeeper id when application is approved" in new Setup {
+      "call developer api and list all developers" in new Setup {
         val loginDetails = LoginDetails("userName", Protected("password"))
         val successfulAuthentication = SuccessfulAuthentication(BearerToken("bearer-token", DateTime.now().plusMinutes(10)), userName, None)
 
+        val users = Seq(User("sample@email.com", "Sample", "Email"), User("another@email.com", "Sample2", "Email"))
+
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
         given(underTest.authConnector.authorized(any[Role])(any[HeaderCarrier])).willReturn(Future.successful(true))
+        given(underTest.developerConnector.fetchAll()(any[HeaderCarrier])).willReturn(Future.successful(users))
 
         val appIdCaptor = ArgumentCaptor.forClass(classOf[String])
         val gatekeeperIdCaptor = ArgumentCaptor.forClass(classOf[String])
 
-        given(underTest.applicationConnector.approveUplift(appIdCaptor.capture(), gatekeeperIdCaptor.capture())(any[HeaderCarrier])).willReturn(Future.successful(ApproveUpliftSuccessful))
+        val result = await(underTest.developersPage()(aLoggedInRequest))
 
-        val result = await(underTest.handleUplift(applicationId)(aLoggedInRequest.withFormUrlEncodedBody(
-          ("action", "APPROVE")
-        )))
-
-        appIdCaptor.getValue shouldBe applicationId
-        gatekeeperIdCaptor.getValue shouldBe userName
+        status(result) shouldBe 200
+        users.foreach(user => bodyOf(result) should include(user.email))
       }
     }
 

@@ -43,7 +43,7 @@ trait ApplicationConnector {
         case e: Upstream4xxResponse if (e.upstreamResponseCode == 412) => throw new PreconditionFailed
       }
 
-  def rejectUplift(applicationId: String, gatekeeperUserId: String, rejectionReason: String)(implicit hc: HeaderCarrier) : Future[RejectUpliftSuccessful] =
+  def rejectUplift(applicationId: String, gatekeeperUserId: String, rejectionReason: String)(implicit hc: HeaderCarrier): Future[RejectUpliftSuccessful] =
     http.POST(s"$applicationBaseUrl/application/$applicationId/reject-uplift",
       RejectUpliftRequest(gatekeeperUserId, rejectionReason), Seq("Content-Type" -> "application/json"))
       .map(_ => RejectUpliftSuccessful)
