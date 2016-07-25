@@ -21,46 +21,48 @@ import model._
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, Request}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import utils.{GatekeeperAuthProvider, GatekeeperAuthWrapper}
 import views.html.developers.developers
 
 object DevelopersController extends DevelopersController {
   override val developerConnector: DeveloperConnector = DeveloperConnector
-  override def authConnector = AuthConnector
-  override def authProvider = GatekeeperAuthProvider
   override val apiDefinitionConnector = ApiDefinitionConnector
+
+  override def authConnector = AuthConnector
+
+  override def authProvider = GatekeeperAuthProvider
 }
 
 trait DevelopersController extends FrontendController with GatekeeperAuthWrapper {
 
   val developerConnector: DeveloperConnector
   val apiDefinitionConnector: ApiDefinitionConnector
-
-  case class DeveloperFilter(api : String)
-
-  object DeveloperFilter {
-    implicit val jsonFormat = Json.format[DeveloperFilter]
-  }
-
   val developerFilterForm: Form[DeveloperFilter] = Form(
     mapping(
       "api" -> nonEmptyText(maxLength = 70)
     )(DeveloperFilter.apply)(DeveloperFilter.unapply))
 
   def developersPage: Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
-    implicit request => implicit hc =>
+    (request: Request[_]) => implicit hc =>
       for {
         devs: Seq[User] <- developerConnector.fetchAll
         apis <- apiDefinitionConnector.fetchAll
+        filter <- request.getQueryString("filter")
         emails: String = devs.map(dev => dev.email).mkString(",")
-      } yield Ok(developers(devs, emails, apis))
+      } yield Ok(developers(devs, emails, apis, filter))
   }
 
   def submitDeveloperFilter = Action { implicit request =>
     val filter: DeveloperFilter = developerFilterForm.bindFromRequest.get
     val api = filter.api
     Ok(s"SOMETHING HERE TO RE-RUN THE FETCH REQUEST $api")
+  }
+
+  case class DeveloperFilter(api: String)
+
+  object DeveloperFilter {
+    implicit val jsonFormat = Json.format[DeveloperFilter]
   }
 }

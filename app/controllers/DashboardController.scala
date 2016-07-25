@@ -16,13 +16,15 @@
 
 package controllers
 
-import connectors.{ApplicationConnector, AuthConnector, DeveloperConnector}
+import connectors.{ApiDefinitionConnector, ApplicationConnector, AuthConnector, DeveloperConnector}
 import model.State.{State, _}
 import model.UpliftAction._
 import model._
 import org.joda.time.DateTime
 import play.api.Logger
 import play.api.data.Form
+import play.api.data.Forms._
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.HeaderCarrier
@@ -35,7 +37,8 @@ import scala.concurrent.Future
 
 object DashboardController extends DashboardController {
   override val applicationConnector = ApplicationConnector
-  override val developerConnector: DeveloperConnector = DeveloperConnector
+  override val developerConnector = DeveloperConnector
+  override val apiDefinitionConnector = ApiDefinitionConnector
 
   override def authProvider = GatekeeperAuthProvider
 
@@ -46,6 +49,11 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
 
   val applicationConnector: ApplicationConnector
   val developerConnector: DeveloperConnector
+  val apiDefinitionConnector: ApiDefinitionConnector
+  val developerFilterForm: Form[DeveloperFilter] = Form(
+    mapping(
+      "api" -> nonEmptyText(maxLength = 70)
+    )(DeveloperFilter.apply)(DeveloperFilter.unapply))
 
   implicit val dateTimeOrdering: Ordering[DateTime] = Ordering.fromLessThan(_ isBefore _)
 
@@ -69,27 +77,6 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
   def reviewPage(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
       fetchApplicationDetails(appId) map (details => Ok(review(HandleUpliftForm.form, details)))
-  }
-
-  private def fetchApplicationDetails(appId: String)(implicit hc: HeaderCarrier): Future[ApplicationDetails] = {
-    def lastSubmission(app: ApplicationWithHistory): Future[SubmissionDetails] = {
-      val submission: StateHistory = app.history.filter(_.state == State.PENDING_GATEKEEPER_APPROVAL)
-        .sortWith(StateHistory.ascendingDateForAppId)
-        .lastOption.getOrElse(throw new InconsistentDataState("pending gatekeeper approval state history item not found"))
-
-      developerConnector.fetchByEmail(submission.actor.id).map(s =>
-        SubmissionDetails(s"${s.firstName} ${s.lastName}", s.email, submission.changedAt)
-      )
-    }
-
-    def applicationDetails(app: ApplicationResponse, submission: SubmissionDetails) = {
-      ApplicationDetails(app.id.toString, app.name, app.description.getOrElse(""), submission)
-    }
-
-    for {
-      app <- applicationConnector.fetchApplication(appId)
-      submission <- lastSubmission(app)
-    } yield applicationDetails(app.application, submission)
   }
 
   def approvedApplicationPage(appId: String): Action[AnyContent] = requiresRole(Role.APIGatekeeper) {
@@ -162,4 +149,32 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
 
       requestForm.fold(errors, addApplicationWithValidForm)
   }
+
+  private def fetchApplicationDetails(appId: String)(implicit hc: HeaderCarrier): Future[ApplicationDetails] = {
+    def lastSubmission(app: ApplicationWithHistory): Future[SubmissionDetails] = {
+      val submission: StateHistory = app.history.filter(_.state == State.PENDING_GATEKEEPER_APPROVAL)
+        .sortWith(StateHistory.ascendingDateForAppId)
+        .lastOption.getOrElse(throw new InconsistentDataState("pending gatekeeper approval state history item not found"))
+
+      developerConnector.fetchByEmail(submission.actor.id).map(s =>
+        SubmissionDetails(s"${s.firstName} ${s.lastName}", s.email, submission.changedAt)
+      )
+    }
+
+    def applicationDetails(app: ApplicationResponse, submission: SubmissionDetails) = {
+      ApplicationDetails(app.id.toString, app.name, app.description.getOrElse(""), submission)
+    }
+
+    for {
+      app <- applicationConnector.fetchApplication(appId)
+      submission <- lastSubmission(app)
+    } yield applicationDetails(app.application, submission)
+  }
+
+  case class DeveloperFilter(api: String)
+
+  object DeveloperFilter {
+    implicit val jsonFormat = Json.format[DeveloperFilter]
+  }
+
 }

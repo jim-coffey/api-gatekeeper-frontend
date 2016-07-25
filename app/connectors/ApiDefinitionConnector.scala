@@ -16,7 +16,8 @@
 
 package connectors
 
-import model.{APIDefinition, DefinitionFormats}
+import model.{APIDefinition}
+import model.DefinitionFormats._
 import play.api.Play._
 import play.api.libs.ws.WS
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -29,7 +30,6 @@ trait ApiDefinitionConnector {
 
   def fetchAll(): Future[Seq[APIDefinition]] = {
     val url = s"$serviceUrl/api-definition"
-
     WS.url(url).withHeaders("Content-Type" -> "application/json").get().map { result =>
       result.status match {
         case 200 => result.json.as[Seq[APIDefinition]]

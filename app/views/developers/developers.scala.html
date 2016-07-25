@@ -1,6 +1,6 @@
 @import model.ApprovedApplication
 @import org.joda.time.format.DateTimeFormat
-@(developers: Seq[model.User], emails: String, apis: Seq[model.APIDefinition])(implicit request: Request[_], userFullName: Option[String])
+@(developers: Seq[model.User], emails: String, apis: Seq[model.APIDefinition], filter: Option[String])(implicit request: Request[_], userFullName: Option[String])
 
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
 
@@ -18,12 +18,18 @@
     </header>
 
     <form method="post">
+        @* TODO: figure out the best way of doing CSRF filtering *@
         Filter by API Subscription
         <select name="api">
             @for(api <- apis) {
-            <option>@api.name</option>
+                @filter match {
+                    case api.name => { "<option selected>@api.name</option>" }
+                    case _ => { "<option>@api.name</option>" }
+                }
             }
         </select>
+        <p><button class="button" type="submit">Filter</button></p>
+        <input type="hidden" name="csrfToken" value="@{play.filters.csrf.CSRF.getToken(request).map(_.value).getOrElse("")}"/>
     </form>
 
     <a href="mailto:?bcc=@emails">Click here</a> to open your external email client and create a new email with all emails as bcc.
