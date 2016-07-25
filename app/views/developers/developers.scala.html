@@ -1,6 +1,6 @@
 @import model.ApprovedApplication
 @import org.joda.time.format.DateTimeFormat
-@(developers: Seq[model.User], emails: String)(implicit request: Request[_], userFullName: Option[String])
+@(developers: Seq[model.User], emails: String, apis: Seq[model.APIDefinition])(implicit request: Request[_], userFullName: Option[String])
 
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName ) {
 
@@ -16,6 +16,15 @@
     <header>
         <h1 class="flush--top">Developers</h1>
     </header>
+
+    <form method="post">
+        Filter by API Subscription
+        <select name="api">
+            @for(api <- apis) {
+            <option>@api.name</option>
+            }
+        </select>
+    </form>
 
     <a href="mailto:?bcc=@emails">Click here</a> to open your external email client and create a new email with all emails as bcc.
 
