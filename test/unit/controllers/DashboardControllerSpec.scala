@@ -82,7 +82,7 @@ class DashboardControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
         given(underTest.authConnector.authorized(any[Role])(any[HeaderCarrier])).willReturn(Future.successful(true))
-        given(underTest.applicationConnector.fetchApplications()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[ApplicationWithUpliftRequest]))
+        given(underTest.applicationConnector.fetchApplicationsWithUpliftRequest()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[ApplicationWithUpliftRequest]))
 
         val result = await(underTest.dashboardPage()(aLoggedInRequest))
 

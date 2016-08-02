@@ -69,7 +69,7 @@ trait DashboardController extends FrontendController with GatekeeperAuthWrapper 
       }
 
       for {
-        apps <- applicationConnector.fetchApplications()
+        apps <- applicationConnector.fetchApplicationsWithUpliftRequest()
         mappedApps = applicationsForDashboard(apps)
       } yield Ok(dashboard(mappedApps))
   }
