@@ -16,29 +16,27 @@
 
 package connectors
 
-import model.{APIDefinition}
-import model.DefinitionFormats._
-import play.api.Play._
-import play.api.libs.ws.WS
+import config.WSHttp
+import model._
+import uk.gov.hmrc.play.http._
 import uk.gov.hmrc.play.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait ApiDefinitionConnector {
-  val serviceUrl: String
+  val serviceBaseUrl: String
+  val http: HttpGet
 
-  def fetchAll(): Future[Seq[APIDefinition]] = {
-    val url = s"$serviceUrl/api-definition"
-    WS.url(url).withHeaders("Content-Type" -> "application/json").get().map { result =>
-      result.status match {
-        case 200 => result.json.as[Seq[APIDefinition]]
-        case _ => throw new RuntimeException(s"Unexpected response from $url: (${result.status}) ${result.body}")
+  def fetchAll()(implicit hc: HeaderCarrier): Future[Seq[APIDefinition]] = {
+    http.GET[Seq[APIDefinition]](s"$serviceBaseUrl/api-definition")
+      .recover {
+        case e: Upstream5xxResponse => throw new FetchApplicationsFailed
       }
-    }
   }
 }
 
 object ApiDefinitionConnector extends ApiDefinitionConnector with ServicesConfig {
-  lazy val serviceUrl = baseUrl("api-definition")
+  override val serviceBaseUrl = baseUrl("api-definition")
+  override val http = WSHttp
 }
