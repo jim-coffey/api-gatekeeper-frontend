@@ -184,3 +184,9 @@ case class ApprovedApplication(details: ApplicationDetails, admins: Seq[User], a
 
 case class CategorisedApplications(pendingApproval: Seq[ApplicationWithUpliftRequest], approved: Seq[ApplicationWithUpliftRequest])
 
+
+case class DeveloperFilter(filter: String, pageNumber: Int, pageSize: Int)
+
+object DeveloperFilter {
+  implicit val jsonFormat = Json.format[DeveloperFilter]
+}
