@@ -48,6 +48,17 @@ case class APIDefinition(
   }
 }
 
+object APIDefinition {
+  implicit val formatAPIStatus = EnumJson.enumFormat(APIStatus)
+  implicit val formatAPIAccessType = EnumJson.enumFormat(APIAccessType)
+  implicit val formatAPIAccess = Json.format[APIAccess]
+  implicit val formatAPIVersion = Json.format[APIVersion]
+  implicit val formatVersionSubscription = Json.format[VersionSubscription]
+  implicit val formatAPISubscription = Json.format[APISubscription]
+  implicit val formatAPIIdentifier = Json.format[APIIdentifier]
+  implicit val formatApiDefinitions = Json.format[APIDefinition]
+}
+
 case class VersionSubscription(version: APIVersion, subscribed: Boolean)
 
 case class APIVersion(version: String, status: APIStatus, access: Option[APIAccess] = None) {
@@ -83,15 +94,4 @@ case class APISubscriptionStatus(name: String, serviceName: String,
   def canUnsubscribe(role: CollaboratorRole) = {
     role == CollaboratorRole.ADMINISTRATOR && subscribed && version.status != APIStatus.DEPRECATED
   }
-}
-
-object DefinitionFormats {
-  implicit val formatAPIStatus = EnumJson.enumFormat(APIStatus)
-  implicit val formatAPIAccessType = EnumJson.enumFormat(APIAccessType)
-  implicit val formatAPIAccess = Json.format[APIAccess]
-  implicit val formatAPIVersion = Json.format[APIVersion]
-  implicit val formatVersionSubscription = Json.format[VersionSubscription]
-  implicit val formatAPISubscription = Json.format[APISubscription]
-  implicit val formatAPIIdentifier = Json.format[APIIdentifier]
-  implicit val formatApiDefinitions = Json.format[APIDefinition]
 }
