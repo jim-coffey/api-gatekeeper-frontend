@@ -116,7 +116,7 @@ object ApplicationWithHistory {
 
 case class ApplicationWithUpliftRequest(id: UUID, name: String, submittedOn: DateTime, state: State)
 
-case class User(email: String, firstName: String, lastName: String) {
+case class User(email: String, firstName: String, lastName: String, verified: Boolean) {
   def fullName = s"$firstName $lastName"
 }
 
