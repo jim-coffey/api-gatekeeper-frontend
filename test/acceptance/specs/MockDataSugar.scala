@@ -245,7 +245,8 @@ trait MockDataSugar {
        |"firstName": "$firstName",
        |"lastName": "$lastName",
        |"registrationTime": 1458300873012,
-       |"lastModified": 1458300877382
+       |"lastModified": 1458300877382,
+       |"verified": true
        |}
      """.stripMargin
 }
