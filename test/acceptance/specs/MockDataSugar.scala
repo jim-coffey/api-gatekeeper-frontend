@@ -126,7 +126,8 @@ trait MockDataSugar {
        |      "requestedByEmailAddress": "$adminEmail",
        |      "verificationCode": "pRoPW05BMTQ_HqzTTR0Ent10py9gvstX34_a3dxx4V8",
        |      "updatedOn": 1459868573962
-       |    }
+       |    },
+       |    "subscriptions": []
        |  },
        |  "history": [
        |      {
@@ -209,6 +210,7 @@ trait MockDataSugar {
        |    ],
        |    "createdOn": 1459866628433,
        |    "redirectUris": [],
+       |    "subscriptions": [],
        |    $state
        |  },
        |  "history": [
