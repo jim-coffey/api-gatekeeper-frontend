@@ -95,3 +95,5 @@ case class APISubscriptionStatus(name: String, serviceName: String,
     role == CollaboratorRole.ADMINISTRATOR && subscribed && version.status != APIStatus.DEPRECATED
   }
 }
+
+class FetchApiDefinitionFailed extends Throwable

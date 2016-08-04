@@ -24,6 +24,11 @@ import uk.gov.hmrc.play.config.ServicesConfig
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+object ApiDefinitionConnector extends ApiDefinitionConnector with ServicesConfig {
+  override val serviceBaseUrl = baseUrl("api-definition")
+  override val http = WSHttp
+}
+
 trait ApiDefinitionConnector {
   val serviceBaseUrl: String
   val http: HttpGet
@@ -31,12 +36,7 @@ trait ApiDefinitionConnector {
   def fetchAll()(implicit hc: HeaderCarrier): Future[Seq[APIDefinition]] = {
     http.GET[Seq[APIDefinition]](s"$serviceBaseUrl/api-definition")
       .recover {
-        case e: Upstream5xxResponse => throw new FetchApplicationsFailed
+        case e: Upstream5xxResponse => throw new FetchApiDefinitionFailed
       }
   }
-}
-
-object ApiDefinitionConnector extends ApiDefinitionConnector with ServicesConfig {
-  override val serviceBaseUrl = baseUrl("api-definition")
-  override val http = WSHttp
 }
