@@ -36,7 +36,7 @@ trait ApiDefinitionConnector {
   def fetchAll()(implicit hc: HeaderCarrier): Future[Seq[APIDefinition]] = {
     http.GET[Seq[APIDefinition]](s"$serviceBaseUrl/api-definition")
       .recover {
-        case e: Upstream5xxResponse => throw new FetchApiDefinitionFailed
+        case e: Upstream5xxResponse => throw new FetchApiDefinitionsFailed
       }
   }
 }

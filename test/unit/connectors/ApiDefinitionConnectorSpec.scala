@@ -84,7 +84,7 @@ class ApiDefinitionConnectorSpec extends UnitSpec with Matchers with ScalaFuture
     "propagate FetchApiDefinitionsFailed exception" in new Setup {
       stubFor(get(urlEqualTo(s"/api-definition")).willReturn(aResponse().withStatus(500)))
 
-      intercept[FetchApiDefinitionFailed](await(connector.fetchAll()))
+      intercept[FetchApiDefinitionsFailed](await(connector.fetchAll()))
     }
   }
 }

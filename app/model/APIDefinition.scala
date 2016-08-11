@@ -96,4 +96,4 @@ case class APISubscriptionStatus(name: String, serviceName: String,
   }
 }
 
-class FetchApiDefinitionFailed extends Throwable
+class FetchApiDefinitionsFailed extends Throwable
