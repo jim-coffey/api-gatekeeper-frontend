@@ -95,7 +95,7 @@ class ApplicationConnectorSpec extends UnitSpec with Matchers with ScalaFutures 
     }
   }
 
-  "fetchApplications" should {
+  "fetchApplicationsWithUpliftRequest" should {
     "retrieve all applications pending uplift approval" in new Setup {
       stubFor(get(urlEqualTo(s"/gatekeeper/applications")).willReturn(aResponse().withStatus(200)
         .withBody("[]")))
@@ -112,6 +112,27 @@ class ApplicationConnectorSpec extends UnitSpec with Matchers with ScalaFutures 
       intercept[FetchApplicationsFailed](await(connector.fetchApplicationsWithUpliftRequest()))
 
       verify(1, getRequestedFor(urlPathEqualTo(s"/gatekeeper/applications"))
+        .withHeader("Authorization", equalTo(authToken)))
+    }
+  }
+
+  "fetchAllApplicationsBySubscription" should {
+    "retrieve all applications subscribed to a specific API" in new Setup {
+      stubFor(get(urlEqualTo(s"/application?subscribesTo=some-context")).willReturn(aResponse().withStatus(200)
+        .withBody("[]")))
+
+      val result = await(connector.fetchAllApplicationsBySubscription(Some("some-context")))
+
+      verify(1, getRequestedFor(urlPathEqualTo("/application?subscribesTo=some-context"))
+        .withHeader("Authorization", equalTo(authToken)))
+    }
+
+    "propagate fetchAllApplicationsBySubscription exception" in new Setup {
+      stubFor(get(urlEqualTo(s"/application?subscribesTo=")).willReturn(aResponse().withStatus(500)))
+
+      intercept[FetchApplicationsFailed](await(connector.fetchAllApplicationsBySubscription(None)))
+
+      verify(1, getRequestedFor(urlPathEqualTo(s"/application?subscribesTo="))
         .withHeader("Authorization", equalTo(authToken)))
     }
   }
