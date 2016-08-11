@@ -16,6 +16,8 @@
 
 package unit.controllers
 
+import java.util.UUID
+
 import connectors.AuthConnector.InvalidCredentials
 import connectors.{ApiDefinitionConnector, ApplicationConnector, AuthConnector, DeveloperConnector}
 import controllers.DevelopersController
@@ -82,7 +84,7 @@ class DeveloperControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
         given(underTest.authConnector.authorized(any[Role])(any[HeaderCarrier])).willReturn(Future.successful(true))
         given(underTest.developerConnector.fetchAll()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[User]))
-        given(underTest.applicationConnector.fetchAllApplications()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[ApplicationResponse]))
+        given(underTest.applicationConnector.fetchAllApplicationsBySubscription(any())(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[ApplicationResponse]))
         given(underTest.apiDefinitionConnector.fetchAll()(any[HeaderCarrier])).willReturn(Seq.empty[APIDefinition])
 
         val result = await(underTest.developersPage(None, 1, 10)(aLoggedInRequest))
@@ -114,18 +116,26 @@ class DeveloperControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
         val users = Seq(
           User("sample@email.com", "Sample", "Email", false),
-          User("another@email.com", "Sample2", "Email", true))
+          User("another@email.com", "Sample2", "Email", true),
+          User("someone@email.com", "Sample3", "Email", true))
+
+
+        val collaborators = Set(
+          Collaborator("sample@email.com", CollaboratorRole.ADMINISTRATOR),
+          Collaborator("someone@email.com", CollaboratorRole.DEVELOPER))
+        val applications = Seq(ApplicationResponse(UUID.randomUUID(),
+          "application", None, collaborators, DateTime.now(), ApplicationState(), Nil))
 
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
         given(underTest.authConnector.authorized(any[Role])(any[HeaderCarrier])).willReturn(Future.successful(true))
         given(underTest.developerConnector.fetchAll()(any[HeaderCarrier])).willReturn(Future.successful(users))
-        given(underTest.applicationConnector.fetchAllApplications()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[ApplicationResponse]))
+        given(underTest.applicationConnector.fetchAllApplicationsBySubscription(any())(any[HeaderCarrier])).willReturn(Future.successful(applications))
         given(underTest.apiDefinitionConnector.fetchAll()(any[HeaderCarrier])).willReturn(Seq.empty[APIDefinition])
 
         val result = await(underTest.developersPage(None, 1, 10)(aLoggedInRequest))
 
         status(result) shouldBe 200
-        users.foreach(user => bodyOf(result) should include(user.email))
+        collaborators.foreach(c => bodyOf(result) should include(c.emailAddress))
       }
     }
 

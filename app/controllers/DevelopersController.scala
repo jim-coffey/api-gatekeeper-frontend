@@ -42,19 +42,9 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
   val apiDefinitionConnector: ApiDefinitionConnector
   val applicationConnector: ApplicationConnector
 
-  private def filterByApi(devs: Seq[User], apps: Seq[ApplicationResponse])(filter: Option[String]): Seq[User] = {
-    filter match {
-      case None | Some("") => devs
-      case Some(flt) => {
-        val collaborators = apps.filter(app => app.subscriptions.exists(s => s.context == flt))
-          .map(_.collaborators)
-          .flatten
-          .map(_.emailAddress)
-          .toSet
-
-        devs.filter(u => collaborators.contains(u.email))
-      }
-    }
+  private def innerJoin(devs: Seq[User], apps: Seq[ApplicationResponse]): Seq[User] = {
+    val collaborators = apps.map(_.collaborators).flatten.map(_.emailAddress).toSet
+    devs.filter(u => collaborators.contains(u.email))
   }
 
   private def redirect(filter: Option[String], pageNumber: Int, pageSize: Int) = {
@@ -63,22 +53,19 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
       "pageSize" -> Seq(pageSize.toString)
     )
 
-    val queryParams = filter.fold(pageParams) { flt: String =>
-      pageParams + ("filter" -> Seq(flt))
-    }
-
+    val queryParams = filter.fold(pageParams) { flt: String => Map("filter" -> Seq(flt)) }
     Redirect("", queryParams, 303)
   }
 
   def developersPage(filter: Option[String], pageNumber: Int, pageSize: Int) = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
       for {
-        apps <- applicationConnector.fetchAllApplications
+        apps <- applicationConnector.fetchAllApplicationsBySubscription(filter)
         devs <- developerConnector.fetchAll
         apis <- apiDefinitionConnector.fetchAll
-        devsByApi = filterByApi(devs, apps)(filter)
-        emails = devsByApi.map(dev => dev.email).mkString(",")
-        page = PageableCollection(devsByApi, pageNumber, pageSize)
+        users = innerJoin(devs, apps)
+        emails = users.map(_.email).mkString(",")
+        page = PageableCollection(users, pageNumber, pageSize)
       } yield {
         if (page.valid) Ok(developers(page, emails, apis, filter))
         else redirect(filter, 1, pageSize)
