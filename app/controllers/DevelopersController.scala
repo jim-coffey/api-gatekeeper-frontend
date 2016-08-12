@@ -43,7 +43,7 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
   val applicationConnector: ApplicationConnector
 
   private def innerJoin(devs: Seq[User], apps: Seq[ApplicationResponse]): Seq[User] = {
-    val collaborators = apps.map(_.collaborators).flatten.map(_.emailAddress).toSet
+    val collaborators = apps.flatMap(_.collaborators).map(_.emailAddress).toSet
     devs.filter(u => collaborators.contains(u.email))
   }
 
