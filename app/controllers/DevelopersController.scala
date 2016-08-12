@@ -60,7 +60,10 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
   def developersPage(filter: Option[String], pageNumber: Int, pageSize: Int) = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
       for {
-        apps <- applicationConnector.fetchAllApplicationsBySubscription(filter)
+        apps <- filter match {
+          case Some(flt) => applicationConnector.fetchAllApplicationsBySubscription(flt)
+          case None => applicationConnector.fetchAllApplications()
+        }
         devs <- developerConnector.fetchAll
         apis <- apiDefinitionConnector.fetchAll
         users = innerJoin(devs, apps)

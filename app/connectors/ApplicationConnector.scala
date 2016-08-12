@@ -63,8 +63,15 @@ trait ApplicationConnector {
     http.GET[ApplicationWithHistory](s"$applicationBaseUrl/gatekeeper/application/$applicationId")
   }
 
-  def fetchAllApplicationsBySubscription(apiContext: Option[String])(implicit hc: HeaderCarrier): Future[Seq[ApplicationResponse]] = {
-    http.GET[Seq[ApplicationResponse]](s"$applicationBaseUrl/application?subscribesTo=${apiContext.getOrElse("")}")
+  def fetchAllApplicationsBySubscription(apiContext: String)(implicit hc: HeaderCarrier): Future[Seq[ApplicationResponse]] = {
+    http.GET[Seq[ApplicationResponse]](s"$applicationBaseUrl/application?subscribesTo=$apiContext")
+      .recover {
+        case e: Upstream5xxResponse => throw new FetchApplicationsFailed
+      }
+  }
+
+  def fetchAllApplications()(implicit hc: HeaderCarrier): Future[Seq[ApplicationResponse]] = {
+    http.GET[Seq[ApplicationResponse]](s"$applicationBaseUrl/application")
       .recover {
         case e: Upstream5xxResponse => throw new FetchApplicationsFailed
       }
