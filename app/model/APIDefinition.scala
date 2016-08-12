@@ -31,14 +31,6 @@ case class APIDefinition(
                           versions: Seq[APIVersion],
                           requiresTrust: Option[Boolean]) {
 
-  require(serviceName.nonEmpty, s"serviceName is required")
-  require(serviceBaseUrl.nonEmpty, s"serviceBaseUrl is required")
-  require(name.nonEmpty, s"name is required")
-  require(context.nonEmpty, s"context is required")
-  require(description.nonEmpty, s"description is required")
-  require(versions.nonEmpty, s"at least one version is required")
-  require(uniqueVersions, s"version numbers must be unique")
-
   private def uniqueVersions = {
     !versions.map(_.version).groupBy(identity).mapValues(_.size).exists(_._2 > 1)
   }
