@@ -17,35 +17,28 @@
 package controllers
 
 import connectors.{ApiDefinitionConnector, ApplicationConnector, AuthConnector, DeveloperConnector}
+import services.DeveloperService
 import model._
 import model.Forms._
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import utils.{GatekeeperAuthProvider, GatekeeperAuthWrapper}
 import views.html.developers.developers
+import services.DeveloperService
 
 import scala.concurrent.Future
 
 object DevelopersController extends DevelopersController {
-  override val developerConnector: DeveloperConnector = DeveloperConnector
-  override val apiDefinitionConnector = ApiDefinitionConnector
-  override val applicationConnector = ApplicationConnector
-
+  override val developerService: DeveloperService = DeveloperService
+  override val apiDefinitionConnector: ApiDefinitionConnector = ApiDefinitionConnector
   override def authConnector = AuthConnector
-
   override def authProvider = GatekeeperAuthProvider
 }
 
 
 trait DevelopersController extends FrontendController with GatekeeperAuthWrapper {
 
-  val developerConnector: DeveloperConnector
+  val developerService: DeveloperService
   val apiDefinitionConnector: ApiDefinitionConnector
-  val applicationConnector: ApplicationConnector
-
-  private def innerJoin(devs: Seq[User], apps: Seq[ApplicationResponse]): Seq[User] = {
-    val collaborators = apps.flatMap(_.collaborators).map(_.emailAddress).toSet
-    devs.filter(u => collaborators.contains(u.email))
-  }
 
   private def redirect(filter: Option[String], pageNumber: Int, pageSize: Int) = {
     val pageParams = Map(
@@ -60,14 +53,11 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
   def developersPage(filter: Option[String], pageNumber: Int, pageSize: Int) = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
       for {
-        apps <- filter match {
-          case Some(flt) => applicationConnector.fetchAllApplicationsBySubscription(flt)
-          case None => applicationConnector.fetchAllApplications()
-        }
-        devs <- developerConnector.fetchAll
+        apps <- developerService.filteredApps(filter)
+        devs <- developerService.fetchDevelopers
         apis <- apiDefinitionConnector.fetchAll
-        users = innerJoin(devs, apps)
-        emails = users.map(_.email).mkString(",")
+        users = developerService.getApplicationUsers(devs, apps)
+        emails = developerService.emailList(users)
         page = PageableCollection(users, pageNumber, pageSize)
       } yield {
         if (page.valid) Ok(developers(page, emails, apis, filter))
