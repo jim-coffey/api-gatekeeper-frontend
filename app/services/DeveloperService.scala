@@ -16,13 +16,10 @@
 
 package services
 
-import java.net.URLEncoder
-
-import config.WSHttp
-import connectors.AuthConnector._
-import connectors.{ApiDefinitionConnector, ApplicationConnector, AuthConnector, DeveloperConnector}
+import connectors.{ApiDefinitionConnector, ApplicationConnector, DeveloperConnector}
 import model._
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpPost}
+import uk.gov.hmrc.play.http.HeaderCarrier
+
 import scala.concurrent.Future
 
 object DeveloperService extends DeveloperService {
