@@ -56,7 +56,7 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
         apps <- developerService.filteredApps(filter)
         devs <- developerService.fetchDevelopers
         apis <- apiDefinitionConnector.fetchAll
-        users = developerService.appUsers(devs, apps)
+        users = developerService.getApplicationUsers(devs, apps)
         emails = developerService.emailList(users)
         page = PageableCollection(users, pageNumber, pageSize)
       } yield {

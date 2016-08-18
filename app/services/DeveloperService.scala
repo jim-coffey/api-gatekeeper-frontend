@@ -44,9 +44,9 @@ trait DeveloperService  {
     }
   }
 
-  def appUsers(devs: Seq[User], apps: Seq[ApplicationResponse]): Seq[User] = {
+  def getApplicationUsers(allUsers: Seq[User], apps: Seq[ApplicationResponse]): Seq[User] = {
       val collaborators = apps.flatMap(_.collaborators).map(_.emailAddress).toSet
-      devs.filter(u => collaborators.contains(u.email))
+      allUsers.filter(u => collaborators.contains(u.email))
   }
 
   def emailList(users: Seq[User]) = {

@@ -32,6 +32,15 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.Future
 
 class DeveloperServiceSpec extends UnitSpec with MockitoSugar {
+  def user(name: String, verified: Boolean = true): User ={
+    User(s"$name@example.net", name, s"${name}son", verified)
+  }
+
+  def app(name: String, collaborators: Set[Collaborator]): ApplicationResponse = {
+    ApplicationResponse(UUID.randomUUID(),
+      name, None, collaborators, DateTime.now(), ApplicationState(), Nil)
+  }
+
   trait Setup {
     val testDeveloperService = new DeveloperService {
       val applicationConnector = mock[ApplicationConnector]
@@ -40,9 +49,10 @@ class DeveloperServiceSpec extends UnitSpec with MockitoSugar {
     }
 
     val users = Seq(
-      User("sample@email.com", "Sample", "Email", false),
-      User("another@email.com", "Sample2", "Email", true),
-      User("someone@email.com", "Sample3", "Email", true))
+      user("Bob", false),
+      user("Brian"),
+      user("Sheila")
+    )
 
     val collaborators = Set(
       Collaborator("sample@email.com", CollaboratorRole.ADMINISTRATOR),
@@ -92,7 +102,63 @@ class DeveloperServiceSpec extends UnitSpec with MockitoSugar {
     "Turn a list of users into an email list" in new Setup {
       val result = testDeveloperService.emailList(users)
 
-      result shouldBe "sample@email.com,another@email.com,someone@email.com"
+      result shouldBe "Bob@example.net,Brian@example.net,Sheila@example.net"
+    }
+
+    "Get the list of users that have access to the given applications" in new Setup {
+      val _users = Seq( user("Bob"), user("Jim"), user("Jacob"))
+      val _allApplications = Seq(
+        app("application1", Set(
+          Collaborator("Bob@example.net", CollaboratorRole.ADMINISTRATOR),
+          Collaborator("Jacob@example.net", CollaboratorRole.DEVELOPER)))
+      )
+
+      val result = testDeveloperService.getApplicationUsers(users, allApplications)
+
+      result shouldBe _users.filter{u => Seq("Sample", "Sample3").contains(u.firstName)}
+    }
+
+    "Get the list of users that have access to different applications" in new Setup {
+      val _users = Seq( user("Bob"), user("Jim"), user("Jacob"))
+      val _allApplications = Seq(
+        app("application1", Set(
+          Collaborator("Bob@example.net", CollaboratorRole.ADMINISTRATOR),
+          Collaborator("Jacob@example.net", CollaboratorRole.DEVELOPER)
+        )
+        ),
+        app("application2", Set(
+          Collaborator("Julia@example.net", CollaboratorRole.ADMINISTRATOR),
+          Collaborator("Jim@example.net", CollaboratorRole.DEVELOPER))
+        ))
+
+      val result = testDeveloperService.getApplicationUsers(_users, _allApplications)
+      result shouldBe _users
+    }
+
+    "No users in our list have access to these apps. Corner case - should never happen in the wild" in
+      new Setup {
+        val _users = Seq( user("Shirley"), user("Gaia"), user("Jimbob"))
+        val _allApplications = Seq(
+          app("application1", Set(
+            Collaborator("Bob@example.net", CollaboratorRole.ADMINISTRATOR),
+            Collaborator("Jacob@example.net", CollaboratorRole.DEVELOPER)
+          )
+          ),
+          app("application2", Set(
+            Collaborator("Julia@example.net", CollaboratorRole.ADMINISTRATOR),
+            Collaborator("Jim@example.net", CollaboratorRole.DEVELOPER))
+          ))
+
+        val result = testDeveloperService.getApplicationUsers(_users, _allApplications)
+        result shouldBe Seq()
+      }
+
+    "No users in our list have access to empty app list." in new Setup {
+      val _users = Seq( user("Shirley"), user("Gaia"), user("Jimbob"))
+      val _allApplications = Seq()
+
+      val result = testDeveloperService.getApplicationUsers(_users, _allApplications)
+      result shouldBe Seq()
     }
   }
 }
