@@ -21,6 +21,7 @@ import java.util.UUID
 import connectors.AuthConnector.InvalidCredentials
 import connectors.{ApiDefinitionConnector, ApplicationConnector, AuthConnector, DeveloperConnector}
 import controllers.DevelopersController
+import services.DeveloperService
 import model.LoginDetails.{JsonStringDecryption, JsonStringEncryption}
 import model._
 import org.joda.time.DateTime
@@ -38,17 +39,21 @@ import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 import scala.concurrent.Future
 
-class DeveloperControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
+class DevelopersControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
 
   Helpers.running(fakeApplication) {
 
     trait Setup {
-      val underTest = new DevelopersController {
-        val authConnector = mock[AuthConnector]
-        val authProvider = mock[AuthenticationProvider]
+      val testDeveloperService = new DeveloperService {
         val applicationConnector = mock[ApplicationConnector]
         val developerConnector = mock[DeveloperConnector]
         val apiDefinitionConnector = mock[ApiDefinitionConnector]
+      }
+      val underTest = new DevelopersController {
+        val authConnector = mock[AuthConnector]
+        val authProvider = mock[AuthenticationProvider]
+        val apiDefinitionConnector = mock[ApiDefinitionConnector]
+        val developerService = testDeveloperService
       }
 
       implicit val encryptedStringFormats = JsonStringEncryption
@@ -83,9 +88,10 @@ class DeveloperControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
         given(underTest.authConnector.authorized(any[Role])(any[HeaderCarrier])).willReturn(Future.successful(true))
-        given(underTest.developerConnector.fetchAll()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[User]))
-        given(underTest.applicationConnector.fetchAllApplications()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[ApplicationResponse]))
+        given(testDeveloperService.developerConnector.fetchAll()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[User]))
+        given(testDeveloperService.applicationConnector.fetchAllApplications()(any[HeaderCarrier])).willReturn(Future.successful(Seq.empty[ApplicationResponse]))
         given(underTest.apiDefinitionConnector.fetchAll()(any[HeaderCarrier])).willReturn(Seq.empty[APIDefinition])
+        given(testDeveloperService.apiDefinitionConnector.fetchAll()(any[HeaderCarrier])).willReturn(Seq.empty[APIDefinition])
 
         val result = await(underTest.developersPage(None, 1, 10)(aLoggedInRequest))
 
@@ -128,9 +134,10 @@ class DeveloperControllerSpec extends UnitSpec with MockitoSugar with WithFakeAp
 
         given(underTest.authConnector.login(any[LoginDetails])(any[HeaderCarrier])).willReturn(Future.successful(successfulAuthentication))
         given(underTest.authConnector.authorized(any[Role])(any[HeaderCarrier])).willReturn(Future.successful(true))
-        given(underTest.developerConnector.fetchAll()(any[HeaderCarrier])).willReturn(Future.successful(users))
-        given(underTest.applicationConnector.fetchAllApplications()(any[HeaderCarrier])).willReturn(Future.successful(applications))
+        given(testDeveloperService.developerConnector.fetchAll()(any[HeaderCarrier])).willReturn(Future.successful(users))
+        given(testDeveloperService.applicationConnector.fetchAllApplications()(any[HeaderCarrier])).willReturn(Future.successful(applications))
         given(underTest.apiDefinitionConnector.fetchAll()(any[HeaderCarrier])).willReturn(Seq.empty[APIDefinition])
+        given(testDeveloperService.apiDefinitionConnector.fetchAll()(any[HeaderCarrier])).willReturn(Seq.empty[APIDefinition])
 
         val result = await(underTest.developersPage(None, 1, 10)(aLoggedInRequest))
 
