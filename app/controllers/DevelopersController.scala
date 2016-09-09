@@ -16,14 +16,14 @@
 
 package controllers
 
-import connectors.{ApiDefinitionConnector, ApplicationConnector, AuthConnector, DeveloperConnector}
-import services.DeveloperService
-import model._
+import connectors.{ApiDefinitionConnector, AuthConnector}
+import model.APIStatus.APIStatus
 import model.Forms._
+import model._
+import services.DeveloperService
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import utils.{GatekeeperAuthProvider, GatekeeperAuthWrapper}
 import views.html.developers.developers
-import services.DeveloperService
 
 import scala.concurrent.Future
 
@@ -33,7 +33,6 @@ object DevelopersController extends DevelopersController {
   override def authConnector = AuthConnector
   override def authProvider = GatekeeperAuthProvider
 }
-
 
 trait DevelopersController extends FrontendController with GatekeeperAuthWrapper {
 
@@ -46,13 +45,24 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
       "pageSize" -> Seq(pageSize.toString)
     )
 
-    val actualFilter = filter match {
-      case Some(x) => if (x == "") None else Some(x)
-      case None => None
+    val filterParams = filter match {
+      case Some("") | None => Map.empty
+      case Some(flt) => Map("filter" -> Seq(flt))
     }
 
-    val queryParams = actualFilter.fold(pageParams) { flt: String => Map("filter" -> Seq(flt)) }
+    val queryParams = pageParams ++ filterParams
     Redirect("", queryParams, 303)
+  }
+
+
+  private def groupApisByStatus(apis: Seq[APIDefinition]): Map[APIStatus, Seq[VersionSummary]] = {
+    
+    val versions = for {
+      api <- apis
+      version <- api.versions
+    } yield VersionSummary(api.name, version.status, APIIdentifier(api.context, version.version))
+
+    versions.groupBy(_.status)
   }
 
   def developersPage(filter: Option[String], pageNumber: Int, pageSize: Int) = requiresRole(Role.APIGatekeeper) {
@@ -66,7 +76,7 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
         page = PageableCollection(users, pageNumber, pageSize)
       } yield {
         if (page.valid) {
-          Ok(developers(page, emails, apis, filter))
+          Ok(developers(page, emails, groupApisByStatus(apis), filter))
         }
         else {
           redirect(filter, 1, pageSize)
