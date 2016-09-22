@@ -101,12 +101,44 @@
 
     @if(users.length > 0) {
     <div class="form-group>">
-        <p><a class="button" href="mailto:?bcc=@emails">Email @{users.length} developers</a></p>
+        <p>
+            <a class="button" href="mailto:?bcc=@emails" title="Opens external mail client BCC'ing all @{users.length} email addresses.">Email @{users.length} developers</a>
+            <a class="button" href="#" title="Copies all @{users.length} email addresses into the system clipboard." onclick="copyTextToClipboard('@emails'); return false;">Copy to clipboard</a>
+        </p>
     </div>
     }
     <div class="form-group>">
         <a class="back-to-top-link" href="#">Back to Top</a>
     </div>
+
+    <script type="text/javascript">
+        function copyTextToClipboard(text) {
+          var textArea = document.createElement("textarea");
+          textArea.style.position = 'fixed';
+          textArea.style.top = 0;
+          textArea.style.left = 0;
+          textArea.style.width = '2em';
+          textArea.style.height = '2em';
+          textArea.style.padding = 0;
+          textArea.style.border = 'none';
+          textArea.style.outline = 'none';
+          textArea.style.boxShadow = 'none';
+          textArea.style.background = 'transparent';
+          textArea.value = text;
+
+          document.body.appendChild(textArea);
+
+          textArea.select();
+
+          try {
+            var successful = document.execCommand('copy');
+          } catch (err) {
+            console.log(err);
+          }
+
+          document.body.removeChild(textArea);
+        }
+    </script>
 </article>
 }
 
