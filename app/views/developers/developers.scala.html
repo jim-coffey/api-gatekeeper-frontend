@@ -1,20 +1,15 @@
 @import include._
 @(users: model.PageableCollection[model.User], emails: String, apis: Map[model.APIStatus.APIStatus, Seq[model.VersionSummary]], filter: Option[String])(implicit request: Request[_], userFullName: Option[String])
 
-@main(title = "API Gatekeeper Developer List",userFullName = userFullName) {
+@main(title = "API Gatekeeper Dashboard",userFullName = userFullName) {
 
 <article class="content__body full-width">
-    <nav class="breadcrumb-nav">
-        <ul>
-            <li class="breadcrumb-nav__item"><a href="dashboard">Dashboard</a></li>
-            <li class="breadcrumb-nav__item breadcrumb-nav__item--trail" aria-hidden="true"></li>
-            <li class="breadcrumb-nav__item">All Developers</li>
-        </ul>
-    </nav>
 
     <header>
-        <h1 class="flush--top">Developers</h1>
+        <h1>Dashboard</h1>
     </header>
+
+    @tabList(1)
 
     <form action="developers" method="post">
         <div class="grid-layout" style="margin-left:0">
