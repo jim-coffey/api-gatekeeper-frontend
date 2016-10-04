@@ -67,8 +67,8 @@
                     <td>@developer.email</td>
                     <td class="text--right hard--right">
                         @defining(developer.verified match {
-                            case true => ("flag flag--soon", "Verified")
-                            case false => ("flag flag--urgent", "Unverified")
+                            case true => ("status status--verified", "verified")
+                            case false => ("status status--not-verified", "not yet verified")
                         }) { case(cssStyle, text) => <span class="@cssStyle">@text</td> }
                 </tr>
             }
