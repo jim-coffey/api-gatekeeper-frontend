@@ -67,11 +67,12 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
 
   def developersPage(filter: Option[String], pageNumber: Int, pageSize: Int) = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
+      val flt = ApiFilter(filter)
       for {
-        apps <- developerService.filteredApps(filter)
+        apps <- developerService.filteredApps(flt)
         devs <- developerService.fetchDevelopers
         apis <- apiDefinitionConnector.fetchAll
-        users = developerService.getApplicationUsers(devs, apps)
+        users = developerService.getApplicationUsers(flt, devs, apps)
         emails = developerService.emailList(users)
         page = PageableCollection(users, pageNumber, pageSize)
       } yield {

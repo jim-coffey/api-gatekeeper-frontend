@@ -121,9 +121,9 @@ class DevelopersControllerSpec extends UnitSpec with MockitoSugar with WithFakeA
           userName, None)
 
         val users = Seq(
-          User("sample@email.com", "Sample", "Email", false),
-          User("another@email.com", "Sample2", "Email", true),
-          User("someone@email.com", "Sample3", "Email", true))
+          User("sample@email.com", "Sample", "Email", Some(false)),
+          User("another@email.com", "Sample2", "Email", Some(true)),
+          User("someone@email.com", "Sample3", "Email", Some(true)))
 
 
         val collaborators = Set(

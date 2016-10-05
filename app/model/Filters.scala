@@ -16,21 +16,22 @@
 
 package model
 
-import play.api.data.Form
-import play.api.data.Forms._
+import play.api.libs.json.Json
 
-package object Forms {
+sealed trait ApiFilter[+A]
+case class Value[A](a: A) extends ApiFilter[A]
+case object NoSubscriptions extends ApiFilter[Nothing]
+case object AllUsers extends ApiFilter[Nothing]
 
-  val loginForm = Form(
-    mapping(
-      "userName" -> nonEmptyText,
-      "password" -> nonEmptyText
-    )(LoginDetails.make)(LoginDetails.unmake))
-
-  val developerFilterForm: Form[DeveloperFilter] = Form(
-    mapping(
-      "filter" -> text(maxLength = 70),
-      "pageNumber" -> number(),
-      "pageSize" -> number()
-    )(DeveloperFilter.apply)(DeveloperFilter.unapply))
+case object ApiFilter extends ApiFilter[String] {
+  def apply(value: Option[String]): ApiFilter[String] = {
+    value match {
+      case Some("ALL") | None => AllUsers
+      case Some("NONE") => NoSubscriptions
+      case Some(flt) => Value(flt)
+    }
+  }
 }
+
+
+case class DeveloperFilter(filter: String, pageNumber: Int, pageSize: Int)

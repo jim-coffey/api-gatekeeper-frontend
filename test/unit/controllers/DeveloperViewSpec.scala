@@ -24,8 +24,9 @@ class DeveloperViewSpec extends PlaySpec {
 
   "developersView" must {
     val users = Seq(
-      User("sample@email.com", "Sample", "Email", false),
-      User("another@email.com", "Sample2", "Email", true))
+      User("sample@email.com", "Sample", "Email", Some(false), None),
+      User("another@email.com", "Sample2", "Email", Some(true), None),
+      UnregisteredCollaborator("something@email.com"))
 
     "list all developers" in new App {
       implicit val fakeRequest = FakeRequest

@@ -1,5 +1,11 @@
+@import controllers._
+@import model._
 @import include._
-@(users: model.PageableCollection[model.User], emails: String, apis: Map[model.APIStatus.APIStatus, Seq[model.VersionSummary]], filter: Option[String])(implicit request: Request[_], userFullName: Option[String])
+
+@(users: PageableCollection[User],
+  emails: String,
+  apis: Map[APIStatus.APIStatus, Seq[VersionSummary]],
+  filter: Option[String])(implicit request: Request[_], userFullName: Option[String])
 
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName) {
 
@@ -9,7 +15,7 @@
         <h1>Dashboard</h1>
     </header>
 
-    @tabList(1)
+    @tabList(activeTab = 1)
 
     <form action="developers" method="post">
         <div class="grid-layout" style="margin-left:0">
@@ -19,7 +25,8 @@
                         <select class="form-control" id="filter" name="filter"
                                 value="@filter" onchange="this.form.submit()"
                                 style="margin:0">
-                            <option value="">ALL</option>
+                            <option @if(filter == None || filter == Some("ALL")) {selected} value="ALL">ALL</option>
+                            <option @if(filter == Some("NONE")) {selected} value="NONE">NONE</option>
 
                             @for((status, versions) <- apis) {
                                 <optgroup label="@status">
@@ -67,8 +74,8 @@
                     <td>@developer.email</td>
                     <td class="text--right hard--right">
                         @defining(developer.verified match {
-                            case true => ("status status--verified", "verified")
-                            case false => ("status status--not-verified", "not yet verified")
+                            case Some(true) => ("status status--verified", "verified")
+                            case Some(false) => ("status status--not-verified", "not yet verified")
                         }) { case(cssStyle, text) => <span class="@cssStyle">@text</td> }
                 </tr>
             }
