@@ -36,16 +36,23 @@ trait DeveloperService  {
   val apiDefinitionConnector: ApiDefinitionConnector
   val applicationConnector: ApplicationConnector
 
-  def filteredApps(filter: Option[String])(implicit hc: HeaderCarrier): Future[Seq[ApplicationResponse]] = {
+  def filteredApps(filter: ApiFilter[String])(implicit hc: HeaderCarrier): Future[Seq[ApplicationResponse]] = {
     filter match {
-      case Some(flt) => applicationConnector.fetchAllApplicationsBySubscription(flt)
-      case None => applicationConnector.fetchAllApplications()
+      case Value(flt) => applicationConnector.fetchAllApplicationsBySubscription(flt)
+      case _ => applicationConnector.fetchAllApplications()
     }
   }
 
-  def getApplicationUsers(allUsers: Seq[User], apps: Seq[ApplicationResponse]): Seq[User] = {
-      val collaborators = apps.flatMap(_.collaborators).map(_.emailAddress).toSet
-      allUsers.filter(u => collaborators.contains(u.email))
+  def getApplicationUsers(filter: ApiFilter[String], allUsers: Seq[User], apps: Seq[ApplicationResponse]): Seq[User] = {
+    val collaborators = apps.flatMap(_.collaborators).map(_.emailAddress).toSet
+    val users = allUsers.map(u => u.email -> u)(collection.breakOut)
+    //val unregistered = collaborators.diff(allUsers.map(_.email).toSet).map(UnregisteredCollaborator(_))
+    val registered = filter match {
+      case NoSubscriptions => allUsers.filterNot(u => collaborators.contains(u.email))
+      case _ => allUsers.filter(u => collaborators.contains(u.email))
+    }
+
+    registered // ++ unregistered
   }
 
   def emailList(users: Seq[User]) = {
