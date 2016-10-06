@@ -27,10 +27,13 @@ package object Forms {
       "password" -> nonEmptyText
     )(LoginDetails.make)(LoginDetails.unmake))
 
-  val developerFilterForm: Form[DeveloperFilter] = Form(
+  val developerFilterForm: Form[DeveloperFilterForm] = Form(
     mapping(
       "filter" -> text(maxLength = 70),
+      "status" -> text(maxLength = 10),
       "pageNumber" -> number(),
       "pageSize" -> number()
-    )(DeveloperFilter.apply)(DeveloperFilter.unapply))
+    )(DeveloperFilterForm.apply)(DeveloperFilterForm.unapply))
 }
+
+case class DeveloperFilterForm(filter: String, status: String, pageNumber: Int, pageSize: Int)

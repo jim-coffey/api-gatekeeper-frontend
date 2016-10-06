@@ -16,7 +16,6 @@
 
 package model
 
-import play.api.libs.json.Json
 
 sealed trait ApiFilter[+A]
 case class Value[A](a: A) extends ApiFilter[A]
@@ -33,5 +32,17 @@ case object ApiFilter extends ApiFilter[String] {
   }
 }
 
+sealed trait StatusFilter
+case object UnverifiedStatus extends StatusFilter
+case object VerifiedStatus extends StatusFilter
+case object AnyStatus extends StatusFilter
 
-case class DeveloperFilter(filter: String, pageNumber: Int, pageSize: Int)
+case object StatusFilter extends StatusFilter {
+  def apply(value: Option[String]): StatusFilter = {
+    value match {
+      case Some("UNVERIFIED") => UnverifiedStatus
+      case Some("VERIFIED") => VerifiedStatus
+      case _ => AnyStatus
+    }
+  }
+}
