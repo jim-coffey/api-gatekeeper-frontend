@@ -48,6 +48,7 @@
                                 <option @if(apiFilter == AllUsers) {selected} value="ALL">All users</option>
                                 <option @if(apiFilter == OneOrMoreSubscriptions) {selected} value="ANYSUB">One or more subscriptions</option>
                                 <option @if(apiFilter == NoSubscriptions) {selected} value="NOSUB">No subscriptions</option>
+                                <option @if(apiFilter == OneOrMoreApplications) {selected} value="ANYAPP">One or more applications</option>
                                 <option @if(apiFilter == NoApplications) {selected} value="NOAPP">No applications</option>
 
                                 @for((status, versions) <- apis) {
