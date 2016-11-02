@@ -118,16 +118,18 @@
         </table>
 
         <div class="grid-layout" style="margin-left:0">
-            <div class="grid-layout__column--1-3 text--left">
-                @paginateButton("Previous", "page-nav__link page-nav__link--previous", users, filter, status, -1)
+            <div class="grid-layout__column--1-3 filters">
             </div>
 
-            <div class="grid-layout__column--1-3 text--center">
+            <div class="grid-layout__column--1-3 entries_status">
                 @entry(users)
             </div>
 
-            <div class="grid-layout__column--1-3 text--right">
-                @paginateButton("Next", "page-nav__link page-nav__link--next", users, filter, status, 1)
+            <div class="grid-layout__column--1-3">
+                <div class="dataTables_paginate paging_simple" id="DataTables_Table_0_paginate">
+                    @paginateButton("Previous", "paginate_button previous", users, filter, status, -1)
+                    @paginateButton("Next", "paginate_button next", users, filter, status, 1)
+                </div>
             </div>
         </div>
 
@@ -182,7 +184,10 @@
     @if(direction < 0 && content.hasPrevious || direction > 0 && content.hasNext) {
         <a class="@cssClass"
            rel="@if(direction < 0) {prev} else {next}"
-           href="@routes.DevelopersController.developersPage(filter, status, content.pageNumber + direction, content.pageSize)">
-            <span class="page-nav__label">@text</span></a>
+           href="@routes.DevelopersController.developersPage(filter, status, content.pageNumber + direction, content.pageSize)"
+            aria-controls="DataTables_Table_0"
+            data-dt-idx="@if(direction < 0) {0} else {1}"
+            id="DataTables_Table_0_@if(direction < 0) {prev} else {next}"
+        >@text</a>
     }
 }
