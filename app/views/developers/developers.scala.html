@@ -25,10 +25,6 @@
           width: 85%;
         }
 
-        .developer-status {
-          min-width: 150px;
-        }
-
         .dataTables_info .label--inlineDropDown {
             margin-top: 0;
         }
@@ -105,7 +101,7 @@
                 <tr role="row">
                     <td class="developer-name">@developer.fullName</td>
                     <td class="developer-email">@developer.email</td>
-                    <td class="developer-status text--right hard--right">
+                    <td class="text--right hard--right">
                         @defining(developer.status match {
                             case VerifiedStatus => ("status status--verified", "verified")
                             case UnverifiedStatus => ("status status--not-verified", "not yet verified")
