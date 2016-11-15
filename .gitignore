@@ -6,6 +6,8 @@ target
 lib_managed
 tmp
 .history
+.cache-main
+.cache-tests
 dist
 /.idea
 /*.iml
@@ -19,3 +21,4 @@ dist
 *.iws
 
     
+/bin/
