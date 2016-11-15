@@ -72,9 +72,8 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
     versions.groupBy(_.status)
   }
 
-  protected def validPageResult(page: PageableCollection[User], emails: String, apis: Seq[APIDefinition], filter: Option[String], status: Option[String])(implicit request: Request[_]): Result = {
+  protected def validPageResult(page: PageableCollection[User], emails: String, apis: Seq[APIDefinition], filter: Option[String], status: Option[String])(implicit request: Request[_]): Result =
     Ok(developers(page, emails, groupApisByStatus(apis), filter, status))
-  }
   
   def developersPage(filter: Option[String], status: Option[String], optionalPageNumber: Option[Int], optionalPageSize: Option[Int]) = requiresRole(Role.APIGatekeeper) {
     implicit request => implicit hc =>
