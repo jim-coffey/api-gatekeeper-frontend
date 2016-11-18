@@ -52,8 +52,4 @@ trait DeveloperService {
   def fetchDevelopers(implicit hc: HeaderCarrier): Future[Seq[User]] = {
     developerConnector.fetchAll.map(_.sorted)
   }
-
-  def fetchAllDevelopers(implicit hc: HeaderCarrier): Future[Developers] = {
-    developerConnector.fetchAll.map(users => Developers(users))
-  }
 }

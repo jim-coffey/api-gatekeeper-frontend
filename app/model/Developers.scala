@@ -23,10 +23,4 @@ case class Developers(users: Seq[User]) {
 
   lazy val emailList = users.map(_.email).mkString(DELIMITER)
 
-  def filterBy(filters: StatusFilter): Developers = {
-    filters match {
-      case AnyStatus => this
-      case _ => users.filter(u => u.status == filters)
-    }
-  }
 }

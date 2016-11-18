@@ -17,10 +17,10 @@
 package services
 
 import connectors.ApplicationConnector
-import model._
+import model.{ResendVerificationSuccessful, ApplicationResponse, ApiFilter, OneOrMoreSubscriptions, NoSubscriptions, Value}
 import uk.gov.hmrc.play.http.HeaderCarrier
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 object ApplicationService extends ApplicationService {
