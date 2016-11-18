@@ -18,19 +18,16 @@ package controllers
 
 import connectors.{ApiDefinitionConnector, AuthConnector}
 import model.APIStatus.APIStatus
-import model.Forms._
 import model._
-import services.DeveloperService
+import play.api.mvc.{Request, Result}
+import services.{ApplicationService, DeveloperService}
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import utils.{GatekeeperAuthProvider, GatekeeperAuthWrapper}
 import views.html.developers.developers
 
-import scala.concurrent.Future
-import play.api.mvc.Request
-import play.api.mvc.Result
-
 object DevelopersController extends DevelopersController {
   override val developerService: DeveloperService = DeveloperService
+  override val applicationService: ApplicationService = ApplicationService
   override val apiDefinitionConnector: ApiDefinitionConnector = ApiDefinitionConnector
   override def authConnector = AuthConnector
   override def authProvider = GatekeeperAuthProvider
@@ -38,6 +35,7 @@ object DevelopersController extends DevelopersController {
 
 trait DevelopersController extends FrontendController with GatekeeperAuthWrapper {
 
+  val applicationService: ApplicationService
   val developerService: DeveloperService
   val apiDefinitionConnector: ApiDefinitionConnector
 
@@ -85,14 +83,14 @@ trait DevelopersController extends FrontendController with GatekeeperAuthWrapper
       val pageNumber = optionalPageNumber.getOrElse(1)
       
       for {
-        apps <- developerService.fetchApplications(apiFilter)
+        apps <- applicationService.fetchApplications(apiFilter)
         apis <- apiDefinitionConnector.fetchAll
         filterOps = (developerService.filterUsersBy(apiFilter, apps) _
-                     andThen developerService.filterUsersBy(statusFilter) _)
-        devs <- developerService.fetchDevelopers
-        users = filterOps(devs)
-        emails = developerService.emailList(users)
-        page = PageableCollection(users, pageNumber, pageSize)
+                     andThen developerService.filterUsersBy(statusFilter))
+        allUsers <- developerService.fetchDevelopers
+        filteredUsers = filterOps(allUsers)
+        emails = Developers(filteredUsers).emailList
+        page = PageableCollection(filteredUsers, pageNumber, pageSize)
       } yield {
         if (page.valid) {
           validPageResult(page, emails, apis, filter, status)
