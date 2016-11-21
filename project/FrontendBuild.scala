@@ -27,7 +27,7 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "json-encryption" % "2.1.0",
     "uk.gov.hmrc" %% "play-health" % "1.1.0",
     "uk.gov.hmrc" %% "govuk-template" % "4.0.0",
-    "uk.gov.hmrc" %% "play-ui" % "4.16.0"
+    "uk.gov.hmrc" %% "play-ui" % "4.17.2"
   )
 
   abstract class TestDependencies(scope: String) {
@@ -39,7 +39,9 @@ private object AppDependencies {
       "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
       "uk.gov.hmrc" %% "hmrctest" % "1.8.0" % scope,
       "com.github.tomakehurst" % "wiremock" % "1.57" % scope,
-      "org.seleniumhq.selenium" % "selenium-java" % "2.53.1" % scope
+      "org.seleniumhq.selenium" % "selenium-java" % "2.53.1" % scope,
+      "org.seleniumhq.selenium" % "selenium-htmlunit-driver" % "2.52.0",
+      "org.scalacheck" %% "scalacheck" % "1.12.5" % scope
     )
   }
 

@@ -130,11 +130,11 @@ class APIGatekeeperDashboardSpec extends BaseSpec with SignInSugar with Matchers
   }
 
   private def assertPendingApplication(appId: String, expected: String) = {
-    webDriver.findElement(By.cssSelector(s"[data-pending-$appId]")).getText.replaceAll("\n", " ") shouldBe expected
+    webDriver.findElement(By.cssSelector(s"[data-pending-$appId]")).getText.replaceAll("\\s+"," ") shouldBe expected
   }
 
   private def assertApprovedApplication(appId: String, expected: String) = {
-    webDriver.findElement(By.cssSelector(s"[data-approved-$appId]")).getText.replaceAll("\n", " ") shouldBe expected
+    webDriver.findElement(By.cssSelector(s"[data-approved-$appId]")).getText.replaceAll("\\s+", " ") shouldBe expected
   }
 
   private def assertNoPendingApplications() = {

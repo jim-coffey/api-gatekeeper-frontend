@@ -90,24 +90,26 @@
         <table class="developer-list">
             <caption class="visuallyhidden">Table showing all developers</caption>
             <thead>
-                <tr role="row">
-                    <th tabindex="0">Name</th>
-                    <th tabindex="0">Email</th>
-                    <th tabindex="0" class="text--right hard--right" data-orderable="false" data-search="false">Status</th>
-                </tr>
+            <tr role="row">
+                <th tabindex="0">First name</th>
+                <th tabindex="0">Last name</th>
+                <th tabindex="0">Email</th>
+                <th tabindex="0" class="text--right hard--right" data-orderable="false" data-search="false">Status</th>
+            </tr>
             </thead>
             <tbody>
-            @for(developer <- users.projection) {
-                <tr role="row">
-                    <td class="developer-name">@developer.fullName</td>
-                    <td class="developer-email">@developer.email</td>
-                    <td class="text--right hard--right">
-                        @defining(developer.status match {
-                            case VerifiedStatus => ("status status--verified", "verified")
-                            case UnverifiedStatus => ("status status--not-verified", "not yet verified")
-                            case UnregisteredStatus => ("status status--not-verified", "not registered")
-                        }) { case(cssStyle, text) => <span class="@cssStyle">@text</td> }
-                </tr>
+            @for((developer, index) <- users.projection.zipWithIndex) {
+            <tr role="row">
+                <td class="developer-forename" id="dev-fn-@index">@developer.firstName</td>
+                <td class="developer-surname" id="dev-sn-@index">@developer.lastName</td>
+                <td class="developer-email" id="dev-email-@index">@developer.email</td>
+                <td class="developer-status text--right hard--right" id="dev-status-@index">
+                    @defining(developer.status match {
+                    case VerifiedStatus => ("status status--verified", "verified")
+                    case UnverifiedStatus => ("status status--not-verified", "not yet verified")
+                    case UnregisteredStatus => ("status status--not-verified", "not registered")
+                    }) { case(cssStyle, text) => <span class="@cssStyle">@text</> }
+            </tr>
             }
             </tbody>
         </table>
@@ -194,4 +196,5 @@
             id="DataTables_Table_0_@if(direction < 0) {prev} else {next}"
         >@text</a>
     }
+
 }

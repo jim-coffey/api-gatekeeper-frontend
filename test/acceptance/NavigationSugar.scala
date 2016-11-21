@@ -23,6 +23,7 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.selenium.WebBrowser
 import org.scalatest.selenium.WebBrowser.{go => goo}
 import org.scalatest.time.{Millis, Seconds, Span}
+import component.matchers.CustomMatchers
 
 trait NavigationSugar extends WebBrowser with Eventually with Assertions with Matchers {
 
