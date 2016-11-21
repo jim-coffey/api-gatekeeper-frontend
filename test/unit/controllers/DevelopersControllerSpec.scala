@@ -19,9 +19,8 @@ package unit.controllers
 import java.util.UUID
 
 import connectors.AuthConnector.InvalidCredentials
-import connectors.{ApiDefinitionConnector, ApplicationConnector, AuthConnector, DeveloperConnector}
+import connectors.{ApiDefinitionConnector, AuthConnector}
 import controllers.DevelopersController
-import services.DeveloperService
 import model.LoginDetails.{JsonStringDecryption, JsonStringEncryption}
 import model._
 import org.joda.time.DateTime
@@ -29,19 +28,16 @@ import org.mockito.BDDMockito._
 import org.mockito.Matchers._
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.Json
+import play.api.mvc.{Request, Result}
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
-import play.filters.csrf.CSRF.SignedTokenProvider
+import services.{ApplicationService, DeveloperService}
 import uk.gov.hmrc.crypto.Protected
 import uk.gov.hmrc.play.frontend.auth.AuthenticationProvider
 import uk.gov.hmrc.play.http.{HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 import scala.concurrent.Future
-import org.mockito.cglib.proxy.Proxy
-import org.mockito.Mock
-import play.api.mvc.Result
-import play.api.mvc.Request
 
 class DevelopersControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
 
@@ -53,12 +49,14 @@ class DevelopersControllerSpec extends UnitSpec with MockitoSugar with WithFakeA
       val mockAuthProvider = mock[AuthenticationProvider]
       val mockApiDefinitionConnector = mock[ApiDefinitionConnector]
       val mockDeveloperService = mock[DeveloperService]
-      
+      val mockApplicationService = mock[ApplicationService]
+
       val developersController = new DevelopersController {
         val authConnector = mockAuthConnector
         val authProvider = mockAuthProvider
         val apiDefinitionConnector = mockApiDefinitionConnector
         val developerService = mockDeveloperService
+        val applicationService = mockApplicationService
       }
 
       implicit val encryptedStringFormats = JsonStringEncryption
@@ -70,7 +68,7 @@ class DevelopersControllerSpec extends UnitSpec with MockitoSugar with WithFakeA
       val userToken = GatekeeperSessionKeys.LoggedInUser -> "userName"
       val aLoggedInRequest = FakeRequest().withSession(authToken, userToken)
       val aLoggedOutRequest = FakeRequest().withSession()
-      val noUsers = Seq.empty[User];
+      val noUsers = Seq.empty[User]
       
       def givenAUnsucessfulLogin(): Unit = {
         givenALogin(false)
@@ -93,12 +91,11 @@ class DevelopersControllerSpec extends UnitSpec with MockitoSugar with WithFakeA
       def givenDelegateServicesSupply(apps: Seq[ApplicationResponse], users: Seq[User], developers: Seq[User]): Unit = {
         val apiFiler = ApiFilter(None)
         val statusFilter = StatusFilter(None)
-        given(mockDeveloperService.fetchApplications(org.mockito.Matchers.eq(apiFiler))(any[HeaderCarrier])).willReturn(Future.successful(apps))
+        given(mockApplicationService.fetchApplications(org.mockito.Matchers.eq(apiFiler))(any[HeaderCarrier])).willReturn(Future.successful(apps))
         given(mockApiDefinitionConnector.fetchAll()(any[HeaderCarrier])).willReturn(Seq.empty[APIDefinition])
         given(mockDeveloperService.filterUsersBy(apiFiler, apps)(users)).willReturn(users)
         given(mockDeveloperService.filterUsersBy(statusFilter)(users)).willReturn(users)
         given(mockDeveloperService.fetchDevelopers(any[HeaderCarrier])).willReturn(Future.successful(developers))
-        given(mockDeveloperService.emailList(users)).willReturn("")
       }
     }
     
@@ -111,6 +108,7 @@ class DevelopersControllerSpec extends UnitSpec with MockitoSugar with WithFakeA
           val authProvider = mockAuthProvider
           val apiDefinitionConnector = mockApiDefinitionConnector
           val developerService = mockDeveloperService
+          val applicationService: ApplicationService = mockApplicationService
           
           override def validPageResult(page: PageableCollection[User], emails: String, apis: Seq[APIDefinition], filter: Option[String], status: Option[String])(implicit request: Request[_]): Result = {
             page.pageNumber shouldBe 1

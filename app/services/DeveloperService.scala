@@ -16,37 +16,20 @@
 
 package services
 
-import connectors.{ApiDefinitionConnector, ApplicationConnector, DeveloperConnector}
+import connectors.DeveloperConnector
 import model._
 import uk.gov.hmrc.play.http.HeaderCarrier
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object DeveloperService extends DeveloperService {
   override val developerConnector: DeveloperConnector = DeveloperConnector
-  override val applicationConnector = ApplicationConnector
-
 }
 
 trait DeveloperService {
 
   val developerConnector: DeveloperConnector
-  val applicationConnector: ApplicationConnector
-
-  def fetchApplications(filter: ApiFilter[String])(implicit hc: HeaderCarrier): Future[Seq[ApplicationResponse]] = {
-    filter match {
-      case OneOrMoreSubscriptions => for {
-        all <- applicationConnector.fetchAllApplications()
-        noSubs <- applicationConnector.fetchAllApplicationsWithNoSubscriptions()
-      } yield {
-        all.filterNot(app => noSubs.contains(app))
-      }
-      case NoSubscriptions => applicationConnector.fetchAllApplicationsWithNoSubscriptions()
-      case Value(flt) => applicationConnector.fetchAllApplicationsBySubscription(flt)
-      case _ => applicationConnector.fetchAllApplications()
-    }
-  }
 
   def filterUsersBy(filter: ApiFilter[String], apps: Seq[ApplicationResponse])(users: Seq[User]): Seq[User] = {
     val collaborators = apps.flatMap(_.collaborators).map(_.emailAddress).toSet
@@ -66,12 +49,7 @@ trait DeveloperService {
     }
   }
 
-  def emailList(users: Seq[User]) = {
-    val DELIMITER = "; " // Outlook requires email addresses separated by semi-colons
-    users.map(_.email).mkString(DELIMITER)
-  }
-
-  def fetchDevelopers(implicit hc: HeaderCarrier) = {
+  def fetchDevelopers(implicit hc: HeaderCarrier): Future[Seq[User]] = {
     developerConnector.fetchAll.map(_.sorted)
   }
 }
