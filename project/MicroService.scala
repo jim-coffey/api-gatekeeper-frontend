@@ -39,7 +39,7 @@ trait MicroService {
         )
       ),
       UglifyKeys.compressOptions := Seq(
-        "unused=true",
+        "unused=false",
         "dead_code=true"
       ),
       includeFilter in uglify := GlobFilter("apis-*.js"),
