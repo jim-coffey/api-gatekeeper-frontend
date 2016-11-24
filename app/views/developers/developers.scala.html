@@ -11,30 +11,6 @@
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName) {
 
 <article class="content__body full-width">
-
-    <style>
-        .developer-list tr {
-          word-break: break-all;
-        }
-
-        .input-select {
-           margin: 0;
-        }
-
-        .input-select--large {
-          width: 85%;
-        }
-
-        .dataTables_info .label--inlineDropDown {
-            margin-top: 0;
-        }
-
-        select.perpage {
-            margin: 0 0 0 9px;
-            float: right;
-        }
-    </style>
-
     <header>
         <h1>Dashboard</h1>
     </header>
@@ -147,42 +123,13 @@
     @if(users.length > 0) {
     <div class="form-group>">
         <p>
-            <a class="button" href="#" title="Copies all @{users.length} email addresses into the system clipboard." onclick="copyTextToClipboard('@emails'); return false;">Copy to clipboard</a>
+            <a id="copy-to-clip" class="button" href="#" title="Copies all @{users.length} email addresses into the system clipboard." data-clip-text="@emails">Copy to clipboard</a>
         </p>
     </div>
     }
     <div class="form-group>">
         <a class="back-to-top-link" href="#">Back to Top</a>
     </div>
-
-    <script type="text/javascript">
-        function copyTextToClipboard(text) {
-          var textArea = document.createElement("textarea");
-          textArea.style.position = 'fixed';
-          textArea.style.top = 0;
-          textArea.style.left = 0;
-          textArea.style.width = '2em';
-          textArea.style.height = '2em';
-          textArea.style.padding = 0;
-          textArea.style.border = 'none';
-          textArea.style.outline = 'none';
-          textArea.style.boxShadow = 'none';
-          textArea.style.background = 'transparent';
-          textArea.value = text;
-
-          document.body.appendChild(textArea);
-
-          textArea.select();
-
-          try {
-            var successful = document.execCommand('copy');
-          } catch (err) {
-            console.log(err);
-          }
-
-          document.body.removeChild(textArea);
-        }
-    </script>
 </article>
 }
 
