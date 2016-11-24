@@ -21,8 +21,9 @@ $(function() {
 
     try {
       var successful = document.execCommand('copy');
-    } catch (err) {
-      console.log(err);
+    } catch (e) {
+      // allow failure - still want to remove textArea
+      // test if we should even display the button later
     }
 
     document.body.removeChild(textArea);
