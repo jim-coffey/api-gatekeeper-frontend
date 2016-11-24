@@ -1,0 +1,22 @@
+.developer-list tr {
+    word-break: break-all;
+}
+
+.input-select {
+    margin: 0;
+}
+
+.input-select--large {
+    width: 85%;
+}
+
+.dataTables_info {
+    .label--inlineDropDown {
+        margin-top: 0;
+    }
+}
+
+select.perpage {
+    margin: 0 0 0 9px;
+    float: right;
+}

@@ -3,6 +3,12 @@ import sbt.Tests.{Group, SubProcess}
 import sbt._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 
+import com.typesafe.sbt.web.Import._
+import com.typesafe.sbt.web.Import.WebKeys._
+import net.ground5hark.sbt.concat.Import._
+import com.typesafe.sbt.uglify.Import._
+import com.typesafe.sbt.digest.Import._
+
 trait MicroService {
 
   import uk.gov.hmrc._
@@ -23,6 +29,25 @@ trait MicroService {
 
   lazy val microservice = Project(appName, file("."))
     .enablePlugins(Seq(play.PlayScala) ++ plugins : _*)
+    .settings(
+      Concat.groups := Seq(
+        "javascripts/apis-app.js" -> group(
+          Seq(
+             "javascripts/developers.js"
+          )
+        )
+      ),
+      UglifyKeys.compressOptions := Seq(
+        "unused=true",
+        "dead_code=true"
+      ),
+      includeFilter in uglify := GlobFilter("apis-*.js"),
+      pipelineStages := Seq(digest),
+      pipelineStages in Assets := Seq(
+        concat,
+        uglify
+      )
+    )
     .settings(playSettings : _*)
     .settings(scalaSettings: _*)
     .settings(publishingSettings: _*)
