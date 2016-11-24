@@ -420,7 +420,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
       on(DeveloperPage)
 
       Then("the copy to clipboard button should contain all of the developers email addresses")
-      verifyUsersEmailAddress("#content a.button","onclick", s"copyTextToClipboard('$developer2; $developer5; $developer4; $developer7; $developer; $developer8; $developer6; $developer9'); return false;")
+      verifyUsersEmailAddress("#content a.button","data-clip-text", s"$developer2; $developer5; $developer4; $developer7; $developer; $developer8; $developer6; $developer9")
     }
   }
 
