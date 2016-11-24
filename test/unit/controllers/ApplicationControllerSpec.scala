@@ -27,7 +27,7 @@ import org.mockito.Matchers._
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.Json
 import play.api.test.{FakeRequest, Helpers}
-import play.filters.csrf.CSRF.SignedTokenProvider
+import play.filters.csrf.CSRF.TokenProvider
 import services.ApplicationService
 import uk.gov.hmrc.crypto.Protected
 import uk.gov.hmrc.play.frontend.auth.AuthenticationProvider
@@ -37,6 +37,8 @@ import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import scala.concurrent.Future
 
 class ApplicationControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
+
+  implicit val materializer = fakeApplication.materializer
 
   Helpers.running(fakeApplication) {
 
@@ -51,7 +53,7 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with WithFake
       implicit val decryptedStringFormats = JsonStringDecryption
       implicit val format = Json.format[LoginDetails]
 
-      val csrfToken = "csrfToken" -> SignedTokenProvider.generateToken
+      val csrfToken = "csrfToken" -> fakeApplication.injector.instanceOf[TokenProvider].generateToken
       val authToken = SessionKeys.authToken -> "some-bearer-token"
       val userToken = GatekeeperSessionKeys.LoggedInUser -> "userName"
 

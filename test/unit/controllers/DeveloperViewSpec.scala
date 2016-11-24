@@ -18,6 +18,8 @@ package unit.controllers
 
 import model._
 import org.scalatestplus.play.PlaySpec
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
 import play.api.test.FakeRequest
 
 class DeveloperViewSpec extends PlaySpec {
@@ -30,7 +32,7 @@ class DeveloperViewSpec extends PlaySpec {
 
     "list all developers" in new App {
       implicit val fakeRequest = FakeRequest
-      val result = views.html.developers.developers.render(PageableCollection(users, 1, 10), "", Map.empty, None, None, FakeRequest(), None)
+      val result = views.html.developers.developers.render(PageableCollection(users, 1, 10), "", Map.empty, None, None, FakeRequest(), None, applicationMessages)
       result.contentType must include( "text/html" )
       users.foreach(user => result.body must include(user.email))
     }

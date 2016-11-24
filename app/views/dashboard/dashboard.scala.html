@@ -3,7 +3,7 @@
 @import model.CategorisedApplications
 @import include._
 
-@(applications: CategorisedApplications)(implicit request: Request[_], userFullName: Option[String])
+@(applications: CategorisedApplications)(implicit request: Request[_], userFullName: Option[String], messages: Messages)
 
 @main(title = "API Gatekeeper Dashboard", userFullName = userFullName) {
 

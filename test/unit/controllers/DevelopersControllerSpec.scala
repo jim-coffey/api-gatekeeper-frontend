@@ -41,6 +41,8 @@ import scala.concurrent.Future
 
 class DevelopersControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication {
 
+  implicit val materializer = fakeApplication.materializer
+
   Helpers.running(fakeApplication) {
 
     trait Setup {
