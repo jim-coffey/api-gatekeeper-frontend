@@ -17,7 +17,7 @@
 package unit.controllers
 
 import controllers.TabHelper._
-import controllers.{HandleUpliftForm, TabHelper, TabLink}
+import controllers.TabLink
 import org.scalatest.Matchers
 import uk.gov.hmrc.play.test.UnitSpec
 

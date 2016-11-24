@@ -1,7 +1,7 @@
 @(title: String,
   mainContentHeader: Html = HtmlFormat.empty,
   userFullName: Option[String] = None,
-  appConfig: config.AppConfig = config.FrontendAppConfig)(mainContent: Html)(implicit request: Request[_])
+  appConfig: config.AppConfig = config.FrontendAppConfig)(mainContent: Html)(implicit request: Request[_], messages: Messages)
 
 @import uk.gov.hmrc.play.views.html.layouts
 

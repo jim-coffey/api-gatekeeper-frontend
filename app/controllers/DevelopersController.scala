@@ -19,6 +19,8 @@ package controllers
 import connectors.{ApiDefinitionConnector, AuthConnector}
 import model.APIStatus.APIStatus
 import model._
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
 import play.api.mvc.{Request, Result}
 import services.{ApplicationService, DeveloperService}
 import uk.gov.hmrc.play.frontend.controller.FrontendController

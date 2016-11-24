@@ -6,7 +6,7 @@
   emails: String,
   apis: Map[APIStatus.APIStatus, Seq[VersionSummary]],
   filter: Option[String],
-  status: Option[String])(implicit request: Request[_], userFullName: Option[String])
+  status: Option[String])(implicit request: Request[_], userFullName: Option[String], messages: Messages)
 
 @main(title = "API Gatekeeper Dashboard",userFullName = userFullName) {
 

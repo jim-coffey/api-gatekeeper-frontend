@@ -1,3 +1,5 @@
+import play.routes.compiler.StaticRoutesGenerator
+import play.sbt.routes.RoutesKeys.routesGenerator
 import sbt.Keys._
 import sbt.Tests.{Group, SubProcess}
 import sbt._
@@ -13,7 +15,6 @@ trait MicroService {
 
   import uk.gov.hmrc._
   import DefaultBuildSettings._
-
   import TestPhases._
 
   val appName: String
@@ -28,7 +29,7 @@ trait MicroService {
 
 
   lazy val microservice = Project(appName, file("."))
-    .enablePlugins(Seq(play.PlayScala) ++ plugins : _*)
+    .enablePlugins(Seq(play.sbt.PlayScala) ++ plugins : _*)
     .settings(
       Concat.groups := Seq(
         "javascripts/apis-app.js" -> group(
@@ -58,7 +59,9 @@ trait MicroService {
       libraryDependencies ++= appDependencies,
       parallelExecution in Test := false,
       fork in Test := false,
-      retrieveManaged := true
+      retrieveManaged := true,
+      evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+      routesGenerator := StaticRoutesGenerator
     )
     .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
     .settings(testOptions in Test := Seq(Tests.Filter(unitFilter)),
@@ -79,8 +82,8 @@ trait MicroService {
     .settings(
       resolvers := Seq(
         Resolver.bintrayRepo("hmrc", "releases"),
-        Resolver.typesafeRepo("releases")
-      )
+        Resolver.typesafeRepo("releases"),
+        Resolver.jcenterRepo)
     )
     .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
 }

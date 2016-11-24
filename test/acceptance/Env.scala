@@ -38,7 +38,9 @@ trait Env {
     driver
   } else if (webDriverConfig == "chrome"){
     val driver: WebDriver = {
-      new ChromeDriver()
+      val driver = new ChromeDriver()
+      driver.manage().window().maximize()
+      driver
     }
     driver
   } else {

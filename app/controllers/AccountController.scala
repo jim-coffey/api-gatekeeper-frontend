@@ -20,7 +20,9 @@ import connectors.AuthConnector
 import model.Forms._
 import model.{GatekeeperSessionKeys, LoginDetails}
 import play.api.Logger
+import play.api.Play.current
 import play.api.i18n.Messages
+import play.api.i18n.Messages.Implicits._
 import play.api.mvc._
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import uk.gov.hmrc.play.http.SessionKeys
