@@ -71,19 +71,47 @@ form[name=developer-filters] {
     }
 }
 
+.word-cloud {
+    margin-top: 0.5em;
+    display: none;
+}
+
 .word-tag {
     display: inline-block;
-    vertical-align: middle;
     margin: 0 0.3em 0.5em 0;
-    padding: 0.2em 1em 0.1em 0.3em;
+    padding: 0;
     font-family: "nta", Arial, sans-serif;
     font-size: 0.9em;
+    height: 1.4em;
     font-weight: 700;
     letter-spacing: 1px;
     text-decoration: none;
-    position: relative;
-    cursor: pointer;
     opacity: 0.8;
+
+    .word-tag__left {
+        width: 0;
+        height: 0;
+        border-top: 0.74em solid white;
+        border-bottom: 0.74em solid white;
+        display: inline-block;
+    }
+
+    .word-tag__label {
+        display: inline-block;
+        vertical-align: super;
+    }
+
+    .word-tag__close {
+        text-align: center;
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+        width: 1.2em;
+        height: 100%;
+        cursor: pointer;
+        border-left: 1px solid white;
+        vertical-align: super;
+    }
 
     &:hover {
         opacity: 1;
@@ -92,26 +120,50 @@ form[name=developer-filters] {
     &.word-tag--orange {
         color: #fff;
         background-color: #f47738;
+
+        .word-tag__left {
+            border-right: 10px solid #f47738;
+        }
     }
 
     &.word-tag--blue {
         color: #fff;
         background-color: blue;
+
+        .word-tag__left {
+            border-right: 10px solid blue;
+        }
     }
 
     &.word-tag--green {
         color: #fff;
         background-color: green;
+
+        .word-tag__left {
+            border-right: 10px solid green;
+        }
+    }
+
+    &.word-tag--grey {
+        color: #fff;
+        background-color: grey;
+
+        .word-tag__left {
+            border-right: 10px solid grey;
+        }
     }
 
     .dismissable {
-        font-size: 0.7em;
-        position: absolute;
-        top: 0;
-        right: 0;
+        text-align: center;
+        border-left: 1px solid white;
+        display: inline-block;
+        margin: 0 auto;
+        width: 1.2em;
+        height: 100%;
+        cursor: pointer;
     }
 
-    .word-tag__close {
+    .word-tag__close-not {
         padding: 3px 6px 2px 6px;
         font-size: 16px;
         font-weight: normal;
