@@ -23,3 +23,5 @@ dist
 /.settings
 *.iws
 .DS_Store
+.ensime
+.ensime_cache

@@ -29,10 +29,11 @@ class DeveloperViewSpec extends PlaySpec {
       User("sample@email.com", "Sample", "Email", Some(false)),
       User("another@email.com", "Sample2", "Email", Some(true)),
       UnregisteredCollaborator("something@email.com"))
+    val devs = users.map(u => Developer.createFromUser(u, Seq.empty))
 
     "list all developers" in new App {
       implicit val fakeRequest = FakeRequest
-      val result = views.html.developers.developers.render(PageableCollection(users, 1, 10), "", Map.empty, None, None, FakeRequest(), None, applicationMessages)
+      val result = views.html.developers.developers.render(devs, "", Map.empty, None, None, FakeRequest(), None, applicationMessages)
       result.contentType must include( "text/html" )
       users.foreach(user => result.body must include(user.email))
     }

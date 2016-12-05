@@ -19,6 +19,7 @@ package unit.services
 import java.util.UUID
 
 import connectors.{ApplicationConnector, DeveloperConnector}
+import model.Developer.createUnregisteredDeveloper
 import model._
 import org.joda.time.DateTime
 import org.mockito.Matchers.{eq => mEq}
@@ -29,8 +30,8 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class DeveloperServiceSpec extends UnitSpec with MockitoSugar {
 
-  def user(name: String, verified: Boolean = true) =
-    User(s"$name@example.net", name, s"${name}son", Some(verified))
+  def user(name: String, apps:Seq[Application]=Seq.empty, verified: Boolean = true) =
+    Developer(s"$name@example.net", name, s"${name}son", Some(verified), apps)
 
   def app(name: String, collaborators: Set[Collaborator]): ApplicationResponse = {
     ApplicationResponse(UUID.randomUUID(),
@@ -49,21 +50,26 @@ class DeveloperServiceSpec extends UnitSpec with MockitoSugar {
     implicit val hc = HeaderCarrier()
   }
 
+  def bob(apps: Seq[Application]=Seq.empty) = user("Bob", apps)
+  def jim(apps: Seq[Application]=Seq.empty) = user("Jim", apps)
+  def jacob(apps: Seq[Application]=Seq.empty) = user("Jacob", apps)
+  def julia(apps: Set[Application]) = createUnregisteredDeveloper("Julia@example.net", apps)
+
   "developerService" should {
 
     "filter all users (no unregistered collaborators)" in new Setup {
-      val users = Seq(user("Bob"), user("Jim"), user("Jacob"))
       val applications = Seq(
         app("application1", Set(
           Collaborator("Bob@example.net", CollaboratorRole.ADMINISTRATOR),
           Collaborator("Jacob@example.net", CollaboratorRole.DEVELOPER))))
+      val users = Seq(bob(applications), jim(applications), jacob(applications))
+
 
       val result = testDeveloperService.filterUsersBy(AllUsers, applications)(users)
-      result shouldBe Seq(user("Bob"), user("Jim"), user("Jacob"))
+      result shouldBe Seq(bob(applications), jim(applications), jacob(applications))
     }
 
     "filter all users (including unregistered collaborators)" in new Setup {
-      val users = Seq(user("Bob"), user("Jim"), user("Jacob"))
       val applications = Seq(
         app("application1", Set(
           Collaborator("Bob@example.net", CollaboratorRole.ADMINISTRATOR),
@@ -72,12 +78,14 @@ class DeveloperServiceSpec extends UnitSpec with MockitoSugar {
           Collaborator("Julia@example.net", CollaboratorRole.ADMINISTRATOR),
           Collaborator("Jim@example.net", CollaboratorRole.DEVELOPER))))
 
+      val users = Seq(bob(applications), jim(applications), jacob(applications))
+
+
       val result = testDeveloperService.filterUsersBy(AllUsers, applications)(users)
-      result shouldBe Seq(user("Bob"), user("Jim"), user("Jacob"), UnregisteredCollaborator("Julia@example.net"))
+      result shouldBe Seq(bob(applications), jim(applications), jacob(applications), julia(applications.tail.toSet))
     }
 
     "filter users that have access to 1 or more applications" in new Setup {
-      val users = Seq(user("Bob"), user("Jim"), user("Jacob"))
       val applications = Seq(
         app("application1", Set(
           Collaborator("Bob@example.net", CollaboratorRole.ADMINISTRATOR),
@@ -86,13 +94,15 @@ class DeveloperServiceSpec extends UnitSpec with MockitoSugar {
           Collaborator("Julia@example.net", CollaboratorRole.ADMINISTRATOR),
           Collaborator("Jim@example.net", CollaboratorRole.DEVELOPER))))
 
+      val users = Seq(user("Bob", applications), user("Jim", applications), user("Jacob", applications))
+
+
       val result = testDeveloperService.filterUsersBy(OneOrMoreSubscriptions, applications)(users)
-      result shouldBe Seq(user("Bob"), user("Jim"), user("Jacob"), UnregisteredCollaborator("Julia@example.net"))
+      result shouldBe Seq(user("Bob", applications), user("Jim", applications), user("Jacob", applications), julia(applications.tail.toSet))
     }
 
     "filter users that are not associated with any applications" in
       new Setup {
-        val users = Seq(user("Shirley"), user("Gaia"), user("Jimbob"))
         val applications = Seq(
           app("application1", Set(
             Collaborator("Shirley@example.net", CollaboratorRole.ADMINISTRATOR),
@@ -100,13 +110,14 @@ class DeveloperServiceSpec extends UnitSpec with MockitoSugar {
           app("application2", Set(
             Collaborator("Julia@example.net", CollaboratorRole.ADMINISTRATOR),
             Collaborator("Jim@example.net", CollaboratorRole.DEVELOPER))))
+        val users = Seq(user("Shirley", applications), user("Gaia"), user("Jimbob"))
+
 
         val result = testDeveloperService.filterUsersBy(NoApplications, applications)(users)
         result shouldBe Seq(user("Gaia"), user("Jimbob"))
       }
 
     "filter users who have no subscriptions" in new Setup {
-      val users = Seq(user("Shirley"), user("Gaia"), user("Jimbob"), user("Jim"))
       val _allApplications = Seq(
         app("application1", Set(
           Collaborator("Bob@example.net", CollaboratorRole.ADMINISTRATOR),
@@ -114,9 +125,17 @@ class DeveloperServiceSpec extends UnitSpec with MockitoSugar {
         app("application2", Set(
           Collaborator("Julia@example.net", CollaboratorRole.ADMINISTRATOR),
           Collaborator("Jim@example.net", CollaboratorRole.DEVELOPER))))
+      val users = Seq(user("Shirley"), user("Gaia"), user("Jimbob"), user("Jim", _allApplications))
 
       val result = testDeveloperService.filterUsersBy(NoSubscriptions, _allApplications)(users)
-      result shouldBe Seq(user("Jim"), UnregisteredCollaborator("Bob@example.net"), UnregisteredCollaborator("Jacob@example.net"), UnregisteredCollaborator("Julia@example.net"))
+
+
+      result should have size 4
+
+      result shouldBe Seq(user("Jim", _allApplications),
+        createUnregisteredDeveloper("Bob@example.net", Set(_allApplications.head)),
+        createUnregisteredDeveloper("Jacob@example.net", Set(_allApplications.head)),
+        createUnregisteredDeveloper("Julia@example.net", Set(_allApplications.tail.head)))
     }
 
     "filter by status does no filtering when any status" in new Setup {
