@@ -42,16 +42,11 @@ $(function(undefined) {
 
   // DataTables
   (function() {
-    var DEVELOPER_TABLE = 'developer-table';
-    var dataTables = [
-      DEVELOPER_TABLE
-    ];
-
-    var getAllFilters = function (table) {
+    function getAllFilters (table) {
       return $('*[data-datatable-filter="' + table + '"]');
     }
 
-    var getTableFilters = function (table) {
+    function getTableFilters (table) {
       return $('*[data-datatable-filter="' + table + '"]')
                .not('[data-datatable-column-filter]');
     };
@@ -112,7 +107,7 @@ $(function(undefined) {
       }
     }
 
-    function dataTableEvents (index, filter) {
+    function listenToFilter (index, filter) {
       var $filter = $(filter);
 
       if (filter.options) {
@@ -124,10 +119,21 @@ $(function(undefined) {
       }
     }
 
+    var DEVELOPER_TABLE = 'developer-table';
+    var dataTables = [
+      DEVELOPER_TABLE
+    ];
+
+    // For all dataTables on the page
     $.each(dataTables, function (index, table) {
+      // Hook in to custom filters
       var filters = getAllFilters(table);
-      $.each(filters, dataTableEvents);
+      $.each(filters, listenToFilter);
+      // Instantiate the dataTable
       $('#' + table).DataTable();
     });
+
+    // Chosen-ify the multi-select
+    $("#filter").chosen();
   })();
 });

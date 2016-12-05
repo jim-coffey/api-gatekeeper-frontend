@@ -39,11 +39,12 @@
                     <label class="form-label bold" for="filter">Filter by API Subscription
                         <select class="form-control input-select input-select--large"
                                 data-datatable-filter="developer-table"
+                                multiple="multiple"
                                 id="filter"
                                 name="filter"
-                                value="@filter">
+                                value="">
 
-                            <option @if(apiFilter == AllUsers) {selected} value>All users</option>
+                            <!--<option @if(apiFilter == AllUsers) {selected} value>All users</option>-->
                             <option @if(apiFilter == OneOrMoreSubscriptions) {selected} value="ANYSUB">One or more subscriptions</option>
                             <option @if(apiFilter == NoSubscriptions) {selected} value="NOSUB">No subscriptions</option>
                             <option @if(apiFilter == OneOrMoreApplications) {selected} value="ANYAPP">One or more applications</option>

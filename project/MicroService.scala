@@ -34,7 +34,8 @@ trait MicroService {
       Concat.groups := Seq(
         "javascripts/apis-app.js" -> group(
           Seq(
-             "javascripts/developers.js"
+             "javascripts/developers.js",
+             "javascripts/chosen.jquery.js"
           )
         )
       ),
