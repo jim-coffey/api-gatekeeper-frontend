@@ -59,7 +59,7 @@
                             name="status"
                             value="@status"
                             value="@filter" onchange="this.form.submit()">
-                        @for((value,label) <- Map("" -> "All", "VERIFIED" -> "Verified", "UNVERIFIED" -> "Not yet verified", "UNREGISTERED" -> "Not registered")) {
+                        @for((value,label) <- Map("ALL" -> "All", "VERIFIED" -> "Verified", "UNVERIFIED" -> "Not yet verified", "UNREGISTERED" -> "Not registered")) {
                             <option value="@value" @if(Some(value) == status){selected}>@label</option>
                         }
                     </select>

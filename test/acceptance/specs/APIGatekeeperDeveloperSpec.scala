@@ -24,8 +24,10 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import component.matchers.CustomMatchers
 import model.User
 import org.openqa.selenium.By
+import org.openqa.selenium.support.ui.{ExpectedConditions, WebDriverWait}
 import org.scalatest.{Assertions, GivenWhenThen, Matchers}
 import play.api.libs.json.Json
+
 import scala.collection.immutable.List
 
 class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers with CustomMatchers with MockDataSugar with GivenWhenThen with Assertions {
@@ -50,8 +52,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
 
       Then("I am successfully navigated to the Developers page where I can view all developer list details by default")
       on(DeveloperPage)
-      assertNumberOfDevelopersPerPage(100)
-      getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 1 to 100 of 105 entries")
+      assertNumberOfDevelopersPerPage(105)
     }
 
     scenario("Ensure a user can view ALL developers") {
@@ -76,7 +77,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
                                                                  (devFirstName, devLastName, developer,statusVerified),
                                                                  (dev8FirstName, dev8LastName, developer8,statusUnverified),
                                                                  (dev6FirstName, dev6LastName, developer6,statusVerified),
-                                                                 (dev9name,"", developer9,statusUnregistered))
+                                                                 (dev9name, dev9name, developer9,statusUnregistered))
 
 
         val allDevs: Seq[((String, String, String, String), Int)] = developers.zipWithIndex
@@ -110,7 +111,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
       DeveloperPage.selectByStatus(NOTREGISTERED)
 
       Then("all the unregistered developers are displayed")
-      val developers4 = List((dev9name,"", developer9, statusUnregistered))
+      val developers4 = List((dev9name, dev9name, developer9, statusUnregistered))
       val unregisteredDev = developers4.zipWithIndex
       assertDevelopersList(unregisteredDev)
     }
@@ -138,7 +139,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
                             (dev7FirstName, dev7LastName,developer7,statusVerified),
                             (devFirstName, devLastName,developer,statusVerified),
                             (dev8FirstName, dev8LastName,developer8, statusUnverified),
-                            (dev9name,"",developer9,statusUnregistered))
+                            (dev9name, dev9name, developer9,statusUnregistered))
 
       val allDevs: Seq[((String, String, String, String), Int)] = developers.zipWithIndex
 
@@ -169,7 +170,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
       DeveloperPage.selectByStatus(NOTREGISTERED)
 
       Then("all the unregistered developers are displayed")
-      val developers4 = List((dev9name,"",developer9, statusUnregistered))
+      val developers4 = List((dev9name, dev9name, developer9, statusUnregistered))
       val unregisteredDev = developers4.zipWithIndex
       assertDevelopersList(unregisteredDev)
 
@@ -195,7 +196,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
       val developers = List((dev5FirstName, dev5LastName, developer5, statusUnverified),
                             (dev4FirstName, dev4LastName, developer4,statusVerified),
                             (dev6FirstName, dev6LastName, developer6, statusVerified),
-                            (dev10name, "",developer10, statusUnregistered))
+                            (dev10name, dev10name, developer10, statusUnregistered))
 
       val allDevs: Seq[((String, String, String, String), Int)] = developers.zipWithIndex
 
@@ -224,7 +225,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
       DeveloperPage.selectByStatus(NOTREGISTERED)
 
       Then("all unregistered developers are displayed")
-      val developers4 = List((dev10name, "",developer10, statusUnregistered))
+      val developers4 = List((dev10name, dev10name, developer10, statusUnregistered))
       val unregisteredDev = developers4.zipWithIndex
       assertDevelopersList(unregisteredDev)
     }
@@ -245,11 +246,11 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
       DeveloperPage.selectBySubscription(ONEORMOREAPPLICATIONS)
 
       Then("all verified developers and unverified developers are displayed and sorted correctly")
-      val developers = List((dev2FirstName,dev2LastName,developer2,statusVerified),
+      val developers = List((dev2FirstName, dev2LastName, developer2, statusVerified),
                             (dev7FirstName, dev7LastName, developer7, statusVerified),
                             (devFirstName, devLastName, developer, statusVerified),
                             (dev8FirstName, dev8LastName, developer8, statusUnverified),
-                            (dev9name,"", developer9, statusUnregistered))
+                            (dev9name, dev9name, developer9, statusUnregistered))
 
       val allDevs: Seq[((String, String, String, String), Int)] = developers.zipWithIndex
       assertDevelopersList(allDevs)
@@ -276,7 +277,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
       DeveloperPage.selectByStatus(NOTREGISTERED)
 
       Then("All unregistered developers are displayed")
-      val developers4 = List((dev9name,"",developer9,statusUnregistered))
+      val developers4 = List((dev9name, dev9name, developer9,statusUnregistered))
       val unregisteredDev = developers4.zipWithIndex
       assertDevelopersList(unregisteredDev)
 
@@ -327,7 +328,6 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
       DeveloperPage.selectByStatus(NOTREGISTERED)
 
       Then("No results should be displayed")
-      getResultEntriesCount(".grid-layout__column--1-3.entries_status", "No developers for your selected filter")
 
       And("The email developer and copy to clipboard buttons are disabled")
       assertCopyToClipboardButtonIsDisabled("#content div a.button")
@@ -354,7 +354,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
                            (dev7FirstName, dev7LastName,developer7,statusVerified),
                            (devFirstName, devLastName,developer,statusVerified),
                            (dev8FirstName, dev8LastName,developer8, statusUnverified),
-                           (dev9name,"",developer9,statusUnregistered))
+                           (dev9name, dev9name, developer9,statusUnregistered))
 
       val allDevs: Seq[((String, String, String, String), Int)] = developers.zipWithIndex
 
@@ -383,7 +383,7 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
       DeveloperPage.selectByStatus(NOTREGISTERED)
 
       Then("all unregistered developers are displayed")
-      val developers4 = List((dev9name,"",developer9,statusUnregistered))
+      val developers4 = List((dev9name, dev9name, developer9,statusUnregistered))
       val unregisteredDev = developers4.zipWithIndex
       assertDevelopersList(unregisteredDev)
     }
@@ -424,128 +424,6 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
     }
   }
 
-    info("AS A Product Owner")
-    info("I WANT any list of email recipients that is too large to fit on one page to be paginated")
-    info("SO THAT The view of recipients is displayed in an easy to read manner")
-
-    feature("Pagination of Email Recipients") {
-
-      scenario("Ensure that the page displays 100 developers by default") {
-
-        Given("I have successfully logged in to the API Gatekeeper")
-        stubApplicationListWithNoDevelopers
-        stubApiDefinition
-        stubRandomDevelopers(101)
-        signInGatekeeper
-        on(DashboardPage)
-
-        When("I select to navigate to the Developers page")
-        DashboardPage.selectDevelopers
-
-        Then("I can view the default number of developers (100) per page")
-        on(DeveloperPage)
-        assertNumberOfDevelopersPerPage(100)
-        getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 1 to 100 of 101 entries")
-
-      }
-
-      scenario("Ensure a user can view segments of 10, 50, 100,200 and 300 results entries") {
-
-        Given("I have successfully logged in to the API Gatekeeper and I am on the Developers page")
-        stubApplicationListWithNoDevelopers
-        stubApiDefinition
-        stubRandomDevelopers(301)
-        signInGatekeeper
-        on(DashboardPage)
-        DashboardPage.selectDevelopers
-        on(DeveloperPage)
-        assertNumberOfDevelopersPerPage(100)
-        getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 1 to 100 of 301 entries")
-
-        When("I select to view 50 result entries")
-        DeveloperPage.selectNoofRows("50")
-
-        Then("50 developers are successfully displayed on the page")
-        assertNumberOfDevelopersPerPage(50)
-        getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 1 to 50 of 301 entries")
-
-        When("I select to view 200 result entries")
-        DeveloperPage.selectNoofRows("200")
-
-        Then("200 developers are successfully displayed on the page")
-        assertNumberOfDevelopersPerPage(200)
-        getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 1 to 200 of 301 entries")
-
-        When("I select to view 10 result entries")
-        DeveloperPage.selectNoofRows("10")
-
-        Then("10 developers are successfully displayed on the page")
-        assertNumberOfDevelopersPerPage(10)
-        getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 1 to 10 of 301 entries")
-
-        When("I select to view 300 result entries")
-        DeveloperPage.selectNoofRows("300")
-
-        Then("300 developers are successfully displayed on the page")
-        assertNumberOfDevelopersPerPage(300)
-        getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 1 to 300 of 301 entries")
-
-
-      }
-
-      scenario("Ensure that a user can navigate to Next and Previous pages to view result entries") {
-
-        Given("I have successfully logged in to the API Gatekeeper and I am on the Developers page")
-        stubApplicationListWithNoDevelopers
-        stubApiDefinition
-        val developers: Option[List[User]] = userListGenerator(300).sample
-          .map(_.sortWith((userA, userB) => userB.lastName.toLowerCase > userA.lastName.toLowerCase))
-        stubDevelopers(developers)
-        signInGatekeeper
-        on(DashboardPage)
-        DashboardPage.selectDevelopers
-        on(DeveloperPage)
-        assertNumberOfDevelopersPerPage(100)
-        assertLinkIsDisabled("Previous")
-        getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 1 to 100 of 300 entries")
-        val first20: List[User] = developers.get.take(20)
-
-        val devList1: List[(TestUser, Int)] = generateUsersTuple(first20).zipWithIndex
-        assertDevelopersRandomList(devList1)
-        When("I select to to view the the next set of result entries")
-        DeveloperPage.showNextEntries()
-
-        Then("the page successfully displays the correct subsequent set of developers")
-        assertNumberOfDevelopersPerPage(100)
-        getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 101 to 200 of 300 entries")
-        val second20 : List[User] = developers.get.slice(100,120)
-
-        val devList2: List[(TestUser, Int)] = generateUsersTuple(second20).zipWithIndex
-
-        assertDevelopersRandomList(devList2)
-
-        When("I select to to view the the last set of result entries")
-        DeveloperPage.showNextEntries()
-
-        Then("the page successfully displays the last subsequent set of developers")
-        getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 201 to 300 of 300 entries")
-        assertNumberOfDevelopersPerPage(100)
-        val third20 : List[User] = developers.get.slice(200,220)
-        val devList3: List[(TestUser, Int)] = generateUsersTuple(third20).zipWithIndex
-
-        assertDevelopersRandomList(devList3)
-        assertLinkIsDisabled("Next")
-
-        When("I select to to view the the previous set of result entries")
-        DeveloperPage.showPreviousEntries()
-
-        Then("The page successfully displays the previous set of developers")
-        getResultEntriesCount(".grid-layout__column--1-3.entries_status", "Showing 101 to 200 of 300 entries")
-        assertNumberOfDevelopersPerPage(100)
-        assertDevelopersRandomList(devList2)
-      }
-    }
-
     def stubApplicationList() = {
       stubFor(get(urlEqualTo("/gatekeeper/applications"))
         .willReturn(aResponse().withBody(approvedApplications).withStatus(200)))
@@ -554,13 +432,13 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
         .withBody(applicationResponse).withStatus(200)))
     }
 
-  def stubApplicationListWithNoDevelopers() = {
-    stubFor(get(urlEqualTo("/gatekeeper/applications"))
+    def stubApplicationListWithNoDevelopers() = {
+      stubFor(get(urlEqualTo("/gatekeeper/applications"))
       .willReturn(aResponse().withBody(approvedApplications).withStatus(200)))
 
-    stubFor(get(urlEqualTo(s"/application")).willReturn(aResponse()
-      .withBody(applicationResponseWithNoUsers).withStatus(200)))
-  }
+      stubFor(get(urlEqualTo(s"/application")).willReturn(aResponse()
+        .withBody(applicationResponseWithNoUsers).withStatus(200)))
+    }
 
     def stubAPISubscription(apiContext: String) = {
        stubFor(get(urlEqualTo(s"/application?subscribesTo=$apiContext"))
@@ -591,10 +469,6 @@ class APIGatekeeperDeveloperSpec extends BaseSpec with SignInSugar with Matchers
 
     private def assertNumberOfDevelopersPerPage(expected: Int) = {
       webDriver.findElements(By.cssSelector("tbody > tr")).size() shouldBe expected
-    }
-
-    private def getResultEntriesCount(locator:String, expected:String) = {
-      val resultEntriesText = webDriver.findElement(By.cssSelector(locator)).getText shouldBe expected
     }
 
     private def assertLinkIsDisabled(link: String) = {
