@@ -31,25 +31,56 @@ trait DeveloperService {
 
   val developerConnector: DeveloperConnector
 
-  def filterUsersBy(filter: ApiFilter[String], apps: Seq[ApplicationResponse])(users: Seq[User]): Seq[User] = {
-    val collaborators = apps.flatMap(_.collaborators).map(_.emailAddress).toSet
-    val unregistered = collaborators.diff(users.map(_.email).toSet).map(UnregisteredCollaborator(_))
+  def filterUsersBy(filter: ApiFilter[String], apps: Seq[Application])
+                   (users: Seq[ApplicationDeveloper]): Seq[ApplicationDeveloper] = {
+
+    val registeredEmails = users.map(_.email)
+
+    def linkAppsAndCollaborators(apps: Seq[Application]): Map[String, Set[Application]] = {
+      apps.foldLeft(Map.empty[String, Set[Application]])((uMap, appResp) =>
+        appResp.collaborators.foldLeft(uMap)((m, c) => {
+          val userApps = m.getOrElse(c.emailAddress, Set.empty[Application]) + appResp
+          m + (c.emailAddress -> userApps)
+        }))
+    }
+
+    lazy val unregisteredCollaborators: Map[String, Set[Application]] =
+      linkAppsAndCollaborators(apps).filterKeys(e => !registeredEmails.contains(e))
+
+    lazy val unregistered: Set[Developer] =
+      unregisteredCollaborators.map { case(user, apps) =>
+        Developer.createUnregisteredDeveloper(user, apps)
+      } toSet
+
+    lazy val (usersWithoutApps, usersWithApps) = users.partition(_.apps.isEmpty)
 
     filter match {
       case AllUsers => users ++ unregistered
-      case NoApplications => users.filterNot(u => collaborators.contains(u.email))
-      case NoSubscriptions | OneOrMoreSubscriptions | OneOrMoreApplications | Value(_) => users.filter(u => collaborators.contains(u.email)) ++ unregistered
+      case NoApplications => usersWithoutApps
+      case NoSubscriptions | OneOrMoreSubscriptions | OneOrMoreApplications | Value(_) => usersWithApps ++ unregistered
     }
   }
 
-  def filterUsersBy(filter: StatusFilter)(users: Seq[User]): Seq[User] = {
+  def filterUsersBy(filter: StatusFilter)(users: Seq[ApplicationDeveloper]): Seq[ApplicationDeveloper] = {
     filter match {
       case AnyStatus => users
       case _ => users.filter(u => u.status == filter)
     }
   }
 
-  def fetchDevelopers(implicit hc: HeaderCarrier): Future[Seq[User]] = {
+  def fetchDevelopers(apps: Seq[Application])(implicit hc: HeaderCarrier): Future[Seq[ApplicationDeveloper]] = {
+
+    def collaboratingApps(user: User, apps: Seq[Application]): Seq[Application] = {
+      apps.filter(a => a.collaborators.map(col => col.emailAddress).contains(user.email))
+    }
+
+    fetchUsers.map(future =>
+      future.map(u => {
+        Developer.createFromUser(u, collaboratingApps(u, apps))
+      }))
+  }
+
+  private def fetchUsers(implicit hc: HeaderCarrier): Future[Seq[User]] = {
     developerConnector.fetchAll.map(_.sorted)
   }
 }
