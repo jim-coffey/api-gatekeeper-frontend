@@ -40,7 +40,7 @@ trait DeveloperService {
       apps.foldLeft(Map.empty[String, Set[Application]])((uMap, appResp) =>
         appResp.collaborators.foldLeft(uMap)((m, c) => {
           val userApps = m.getOrElse(c.emailAddress, Set.empty[Application]) + appResp
-          m + ((c.emailAddress, userApps))
+          m + (c.emailAddress -> userApps)
         }))
     }
 
@@ -48,7 +48,9 @@ trait DeveloperService {
       linkAppsAndCollaborators(apps).filterKeys(e => !registeredEmails.contains(e))
 
     lazy val unregistered: Set[Developer] =
-      unregisteredCollaborators.map((u: (String, Set[Application])) => Developer.createUnregisteredDeveloper(u._1, u._2)).toSet
+      unregisteredCollaborators.map { case(user, apps) =>
+        Developer.createUnregisteredDeveloper(user, apps)
+      } toSet
 
     lazy val (usersWithoutApps, usersWithApps) = users.partition(_.apps.isEmpty)
 
@@ -74,7 +76,7 @@ trait DeveloperService {
 
     fetchUsers.map(future =>
       future.map(u => {
-        Developer(u.email, u.firstName, u.lastName, u.verified, collaboratingApps(u, apps))
+        Developer.createFromUser(u, collaboratingApps(u, apps))
       }))
   }
 

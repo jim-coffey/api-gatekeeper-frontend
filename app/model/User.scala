@@ -41,11 +41,11 @@ case class Developer(email: String, firstName: String, lastName: String, verifie
                      apps: Seq[Application]) extends ApplicationDeveloper
 
 object Developer {
-  def createUnregisteredDeveloper(email: String, apps: Set[Application] =Set.empty) = {
+  def createUnregisteredDeveloper(email: String, apps: Set[Application] = Set.empty) = {
     Developer(email, "n/a", "n/a", None, apps.toSeq)
   }
 
-  def createFromUser(user: User, apps: Seq[Application]= Seq.empty) =
+  def createFromUser(user: User, apps: Seq[Application] = Seq.empty) =
     Developer(user.email, user.firstName, user.lastName, user.verified, apps)
 }
 
