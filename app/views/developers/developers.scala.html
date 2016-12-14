@@ -1,6 +1,6 @@
 @import controllers._
-@import model._
 @import include._
+@import model._
 
 @(users: Seq[ApplicationDeveloper],
   emails: String,
@@ -12,10 +12,10 @@
 
 <article class="content__body full-width">
     <header>
-        <h1>Dashboard</h1>
+        <h1>Developers</h1>
     </header>
 
-    @tabList(activeTab = 1)
+    @tabList(activeTab = 2)
 
     <form name="developer-filters"
           action="@routes.DevelopersController.developersPage(filter, status).url"

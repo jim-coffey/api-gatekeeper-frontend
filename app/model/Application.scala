@@ -46,11 +46,32 @@ object ApplicationResponse {
   implicit val format1 = Json.format[APIIdentifier]
   implicit val formatRole = EnumJson.enumFormat(CollaboratorRole)
   implicit val format2 = Json.format[Collaborator]
-  implicit val format3 = Json.format[ApplicationState]
-  implicit val format4 = EnumJson.enumFormat(State)
+  implicit val format3 = EnumJson.enumFormat(State)
+  implicit val format4 = Json.format[ApplicationState]
   implicit val format5 = Json.format[ApplicationResponse]
 }
 
+case class SubscribedApplicationResponse(id: UUID,
+                                         name: String,
+                                         description: Option[String] = None,
+                                         collaborators: Set[Collaborator],
+                                         createdOn: DateTime,
+                                         state: ApplicationState,
+                                         subscriptionNames: Seq[String]) extends Application
+
+
+object SubscribedApplicationResponse {
+  implicit val format1 = Json.format[APIIdentifier]
+  implicit val formatRole = EnumJson.enumFormat(CollaboratorRole)
+  implicit val format2 = Json.format[Collaborator]
+  implicit val format3 = EnumJson.enumFormat(State)
+  implicit val format4 = Json.format[ApplicationState]
+  implicit val format5 = Json.format[SubscribedApplicationResponse]
+
+  def createFrom(appResponse: ApplicationResponse, subscriptions: Seq[String]) =
+    SubscribedApplicationResponse(appResponse.id, appResponse.name, appResponse.description,
+      appResponse.collaborators, appResponse.createdOn, appResponse.state, subscriptions)
+}
 
 object State extends Enumeration {
   type State = Value

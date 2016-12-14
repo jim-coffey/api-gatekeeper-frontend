@@ -42,9 +42,50 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
     val collaborators = Set(
       Collaborator("sample@email.com", CollaboratorRole.ADMINISTRATOR),
       Collaborator("someone@email.com", CollaboratorRole.DEVELOPER))
+
+    val allApplications = Seq(
+      ApplicationResponse(UUID.randomUUID(),
+        "application1", None, collaborators, DateTime.now(), ApplicationState()),
+      ApplicationResponse(UUID.randomUUID(),
+        "application2", None, collaborators, DateTime.now(), ApplicationState()),
+      ApplicationResponse(UUID.randomUUID(),
+        "application3", None, collaborators, DateTime.now(), ApplicationState()))
   }
 
   "applicationService" should {
+
+    "list all subscribed applications" in new Setup {
+
+
+      given(testApplicationService.applicationConnector.fetchAllApplications()(any[HeaderCarrier]))
+        .willReturn(Future.successful(allApplications))
+
+      val subscriptions =
+        Seq(SubscriptionResponse(APIIdentifier("test-context", "1.0"), Seq(allApplications.tail.head.id.toString)),
+          SubscriptionResponse(APIIdentifier("unknown-context", "1.0"), Seq()),
+          SubscriptionResponse(APIIdentifier("super-context", "1.0"), allApplications.map(_.id.toString)))
+
+
+      given(testApplicationService.applicationConnector.fetchAllSubscriptions()(any[HeaderCarrier]))
+        .willReturn(Future.successful(subscriptions))
+
+
+      val result: Seq[SubscribedApplicationResponse] = await(testApplicationService.fetchAllSubscribedApplications)
+
+      val app1 = result.find(sa => sa.name == "application1").get
+      val app2 = result.find(sa => sa.name == "application2").get
+      val app3 = result.find(sa => sa.name == "application3").get
+
+      app1.subscriptionNames should have size 1
+      app1.subscriptionNames shouldBe Seq("Super context")
+
+      app2.subscriptionNames should have size 2
+      app2.subscriptionNames shouldBe Seq("Super context", "Test context")
+
+      app3.subscriptionNames should have size 1
+      app3.subscriptionNames shouldBe Seq("Super context")
+    }
+
     "call applicationConnector with appropriate parameters" in new Setup {
       val applicationId = "applicationId"
       val userName = "userName"
@@ -60,14 +101,6 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
     }
 
     "list all applications when filtering not provided" in new Setup {
-      val allApplications = Seq(
-        ApplicationResponse(UUID.randomUUID(),
-          "application1", None, collaborators, DateTime.now(), ApplicationState()),
-        ApplicationResponse(UUID.randomUUID(),
-          "application2", None, collaborators, DateTime.now(), ApplicationState()),
-        ApplicationResponse(UUID.randomUUID(),
-          "application3", None, collaborators, DateTime.now(), ApplicationState()))
-
       given(testApplicationService.applicationConnector.fetchAllApplications()(any[HeaderCarrier])).willReturn(Future.successful(allApplications))
 
       val result: Seq[ApplicationResponse] = await(testApplicationService.fetchApplications)
